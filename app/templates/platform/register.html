@@ -1,0 +1,14 @@
+{% extends 'platform/auth_base.html' %}
+{% block title %}Criar conta{% endblock %}
+{% block auth_content %}
+<h2>Criar conta</h2>
+<p class="muted">Cadastre-se para criar sua loja.</p>
+<form method="post" class="form-grid">
+  <label>Nome<input type="text" name="name" required></label>
+  <label>Email<input type="email" name="email" required></label>
+  <label>Telefone / WhatsApp<input type="text" name="phone"></label>
+  <label>Senha<input type="password" name="password" required></label>
+  <button class="btn btn-primary">Criar conta</button>
+  <a class="btn btn-light" href="{{ url_for('login') }}">Já tenho conta</a>
+</form>
+{% endblock %}

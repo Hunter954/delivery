@@ -1,0 +1,29 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Admin master{% endblock %}
+{% block panel_content %}
+<div class="page-head"><div><h1>Admin master</h1><p class="muted">Visão geral da plataforma.</p></div></div>
+<div class="stats-grid">
+  <div class="stat-card red"><span>Lojistas</span><strong>{{ users|length }}</strong></div>
+  <div class="stat-card"><span>Lojas</span><strong>{{ stores|length }}</strong></div>
+  <div class="stat-card"><span>Pedidos</span><strong>{{ orders|length }}</strong></div>
+  <div class="stat-card"><span>Receita total</span><strong>R$ {{ '%.2f'|format(orders|sum(attribute='total')) }}</strong></div>
+</div>
+<div class="grid-2">
+  <div class="panel-card">
+    <h3>Lojas</h3>
+    <div class="list-stack">
+      {% for store in stores %}
+      <div class="list-row"><span>{{ store.name }} <small class="muted">/{{ store.slug }}</small></span><span class="badge">{{ store.city or '—' }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="panel-card">
+    <h3>Usuários</h3>
+    <div class="list-stack">
+      {% for user in users %}
+      <div class="list-row"><span>{{ user.name }}</span><small class="muted">{{ user.email }}</small></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Configurar loja{% endblock %}
+{% block panel_content %}
+<div class="page-head"><div><h1>Configurar loja</h1><p class="muted">Personalize visual, Pix, entrega e dados públicos.</p></div><a class="btn btn-light" href="/{{ store.slug }}" target="_blank">Abrir loja</a></div>
+<div class="grid-2 settings-grid">
+  <div class="panel-card form-card">
+    <form method="post" class="form-grid cols-2">
+      <label>Nome<input type="text" name="name" value="{{ store.name }}" required></label>
+      <label>Slug<input type="text" name="slug" value="{{ store.slug }}" required></label>
+      <label class="full">Descrição<textarea name="description" rows="4">{{ store.description or '' }}</textarea></label>
+      <label>Logo URL<input type="url" name="logo_url" value="{{ store.logo_url or '' }}"></label>
+      <label>Banner URL<input type="url" name="banner_url" value="{{ store.banner_url or '' }}"></label>
+      <label>Cor primária<input type="color" name="primary_color" value="{{ store.primary_color }}"></label>
+      <label>Cor secundária<input type="color" name="secondary_color" value="{{ store.secondary_color }}"></label>
+      <label>Cor de destaque<input type="color" name="accent_color" value="{{ store.accent_color }}"></label>
+      <label>Tempo estimado<input type="text" name="estimated_time" value="{{ store.estimated_time }}"></label>
+      <label>Taxa de entrega<input type="number" step="0.01" name="delivery_fee" value="{{ store.delivery_fee }}"></label>
+      <label>Pedido mínimo<input type="number" step="0.01" name="min_order_value" value="{{ store.min_order_value }}"></label>
+      <label>WhatsApp<input type="text" name="whatsapp" value="{{ store.whatsapp or '' }}"></label>
+      <label class="full">Endereço<input type="text" name="address" value="{{ store.address or '' }}"></label>
+      <label>Cidade<input type="text" name="city" value="{{ store.city or '' }}"></label>
+      <label>Estado<input type="text" name="state" value="{{ store.state or '' }}"></label>
+      <label>Abre às<input type="text" name="open_time" value="{{ store.open_time }}"></label>
+      <label>Fecha às<input type="text" name="close_time" value="{{ store.close_time }}"></label>
+      <label>Nome do recebedor Pix<input type="text" name="pix_holder" value="{{ store.pix_holder or '' }}"></label>
+      <label>Chave Pix<input type="text" name="pix_key" value="{{ store.pix_key or '' }}"></label>
+      <label class="checkbox"><input type="checkbox" name="is_open" {% if store.is_open %}checked{% endif %}> Loja aberta</label>
+      <label class="checkbox"><input type="checkbox" name="is_active" {% if store.is_active %}checked{% endif %}> Loja publicada</label>
+      <div class="full"><button class="btn btn-primary">Salvar configurações</button></div>
+    </form>
+  </div>
+  <div class="panel-card live-preview" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+    <div class="phone-mock small-phone">
+      <div class="phone-notch"></div>
+      <div class="phone-content storefront-mini">
+        <div class="store-banner" style="background-image:url('{{ store.banner_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=1200&auto=format&fit=crop' }}')"></div>
+        <div class="store-card overlay-card compact">
+          <div class="row between center">
+            <h3>{{ store.name }}</h3>
+            <span class="badge">{{ 'Aberta' if store.is_open else 'Fechada' }}</span>
+          </div>
+          <p class="muted">{{ store.description or 'Seu slogan e descrição ficam aqui.' }}</p>
+          <div class="quick-pills"><span>{{ store.estimated_time }}</span><span>R$ {{ '%.2f'|format(store.delivery_fee) }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

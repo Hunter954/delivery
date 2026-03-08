@@ -1,0 +1,52 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block panel_content %}
+<div class="page-head">
+  <div>
+    <h1>Olá, {{ current_user.name }}</h1>
+    <p class="muted">Gerencie sua operação de delivery em um só lugar.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('create_store') }}">Criar nova loja</a>
+</div>
+
+{% if active_store %}
+<div class="stats-grid">
+  <div class="stat-card red"><span>Produtos</span><strong>{{ stats.products }}</strong></div>
+  <div class="stat-card"><span>Categorias</span><strong>{{ stats.categories }}</strong></div>
+  <div class="stat-card"><span>Pedidos</span><strong>{{ stats.orders }}</strong></div>
+  <div class="stat-card"><span>Faturamento</span><strong>R$ {{ '%.2f'|format(stats.revenue) }}</strong></div>
+</div>
+<div class="grid-2">
+  <div class="panel-card">
+    <div class="row between center">
+      <h3>{{ active_store.name }}</h3>
+      <span class="badge {% if active_store.is_open %}badge-green{% endif %}">{{ 'Aberta' if active_store.is_open else 'Fechada' }}</span>
+    </div>
+    <p>{{ active_store.description or 'Adicione uma descrição para sua loja.' }}</p>
+    <div class="info-list">
+      <span><i class="bi bi-link-45deg"></i> <a href="/{{ active_store.slug }}" target="_blank">/{{ active_store.slug }}</a></span>
+      <span><i class="bi bi-geo-alt"></i> {{ active_store.city or '-' }}/{{ active_store.state or '-' }}</span>
+      <span><i class="bi bi-whatsapp"></i> {{ active_store.whatsapp or '-' }}</span>
+    </div>
+  </div>
+  <div class="panel-card phone-preview-wrap">
+    <div class="phone-mock small-phone" style="--store-primary: {{ active_store.primary_color }}; --store-secondary: {{ active_store.secondary_color }}; --store-accent: {{ active_store.accent_color }};">
+      <div class="phone-notch"></div>
+      <div class="phone-content storefront-mini">
+        <div class="store-banner" style="background-image:url('{{ active_store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=1200&auto=format&fit=crop' }}')"></div>
+        <div class="store-card overlay-card compact">
+          <h3>{{ active_store.name }}</h3>
+          <p class="muted">{{ active_store.estimated_time }} • R$ {{ '%.2f'|format(active_store.delivery_fee) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="empty-card big-empty">
+  <h2>Você ainda não criou sua primeira loja</h2>
+  <p>Comece criando uma loja e depois personalize banners, cores, Pix e cardápio.</p>
+  <a class="btn btn-primary" href="{{ url_for('create_store') }}">Criar minha loja</a>
+</div>
+{% endif %}
+{% endblock %}

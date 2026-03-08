@@ -1,0 +1,44 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Pedidos{% endblock %}
+{% block panel_content %}
+<div class="page-head"><div><h1>Pedidos</h1><p class="muted">Acompanhe e atualize o status dos pedidos.</p></div></div>
+<div class="orders-stack">
+  {% for order in orders %}
+  <div class="panel-card order-card">
+    <div class="row between center wrap gap-12">
+      <div>
+        <h3>Pedido #{{ order.id }}</h3>
+        <p class="muted small">{{ order.customer_name }} • {{ order.customer_phone }} • {{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+      </div>
+      <span class="badge badge-status">{{ order.status }}</span>
+    </div>
+    <div class="grid-2 order-grid">
+      <div>
+        <p><strong>Entrega:</strong> {{ 'Delivery' if order.fulfillment_type == 'delivery' else 'Retirada' }}</p>
+        <p><strong>Pagamento:</strong> {{ order.payment_method|upper }}</p>
+        <p><strong>Endereço:</strong> {{ order.customer_address or '-' }}</p>
+        <p><strong>Obs:</strong> {{ order.customer_notes or '-' }}</p>
+      </div>
+      <div>
+        <ul class="order-items-list">
+          {% for item in order.items %}
+          <li>{{ item.quantity }}x {{ item.product_name }} — R$ {{ '%.2f'|format(item.total_price) }}</li>
+          {% endfor %}
+        </ul>
+        <p><strong>Total:</strong> R$ {{ '%.2f'|format(order.total) }}</p>
+      </div>
+    </div>
+    <form method="post" action="{{ url_for('update_order_status', order_id=order.id) }}" class="row gap-12 wrap mt-12">
+      <select name="status">
+        {% for status in ['new','preparing','on_the_way','completed','cancelled'] %}
+        <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ status }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary btn-sm">Atualizar status</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="empty-card"><h3>Nenhum pedido ainda</h3><p>Quando um cliente finalizar a compra, ele aparece aqui.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

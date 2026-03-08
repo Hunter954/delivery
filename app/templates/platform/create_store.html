@@ -1,0 +1,16 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Nova loja{% endblock %}
+{% block panel_content %}
+<div class="page-head"><div><h1>Criar nova loja</h1><p class="muted">Comece com slug próprio no formato delivery.com/sualoja.</p></div></div>
+<div class="panel-card form-card">
+  <form method="post" class="form-grid cols-2">
+    <label>Nome da loja<input type="text" name="name" required></label>
+    <label>Slug / link<input type="text" name="slug" placeholder="nativolanches" required></label>
+    <label>Cidade<input type="text" name="city"></label>
+    <label>Estado<input type="text" name="state"></label>
+    <label>WhatsApp<input type="text" name="whatsapp"></label>
+    <label>Descrição<textarea name="description" rows="4"></textarea></label>
+    <div class="full"><button class="btn btn-primary">Criar loja</button></div>
+  </form>
+</div>
+{% endblock %}

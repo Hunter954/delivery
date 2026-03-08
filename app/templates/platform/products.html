@@ -1,0 +1,45 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Produtos{% endblock %}
+{% block panel_content %}
+<div class="page-head"><div><h1>Produtos</h1><p class="muted">Cadastre os itens do cardápio da sua loja.</p></div></div>
+<div class="grid-2 products-grid">
+  <div class="panel-card form-card">
+    <h3>Novo produto</h3>
+    <form method="post" class="form-grid">
+      <label>Categoria
+        <select name="category_id" required>
+          {% for category in categories %}<option value="{{ category.id }}">{{ category.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Nome<input type="text" name="name" required></label>
+      <label>Descrição<textarea name="description" rows="3"></textarea></label>
+      <label>Imagem URL<input type="url" name="image_url"></label>
+      <label>Preço<input type="number" step="0.01" name="price" required></label>
+      <label>Preço de comparação<input type="number" step="0.01" name="compare_at_price"></label>
+      <label class="checkbox"><input type="checkbox" name="is_featured"> Destacar produto</label>
+      <label class="checkbox"><input type="checkbox" name="is_active" checked> Produto ativo</label>
+      <button class="btn btn-primary">Salvar produto</button>
+    </form>
+  </div>
+  <div class="panel-card">
+    <h3>Produtos cadastrados</h3>
+    <div class="product-admin-grid">
+      {% for product in products %}
+      <div class="product-admin-card">
+        <div class="thumb" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
+        <div>
+          <strong>{{ product.name }}</strong>
+          <p class="muted small">{{ product.category.name }}</p>
+          <div class="row between center">
+            <span>R$ {{ '%.2f'|format(product.price) }}</span>
+            <a class="btn btn-light btn-sm" href="{{ url_for('toggle_product', product_id=product.id) }}">{{ 'Desativar' if product.is_active else 'Ativar' }}</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="muted">Nenhum produto cadastrado.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

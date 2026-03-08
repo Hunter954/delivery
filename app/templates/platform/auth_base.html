@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="auth-layout">
+  <div class="auth-side red-theme">
+    <div>
+      <span class="pill">delivery.com</span>
+      <h1>Monte sua loja de delivery sem depender de marketplace.</h1>
+      <p>Painel, produtos, pedidos, checkout e visual no estilo app moderno.</p>
+    </div>
+  </div>
+  <div class="auth-main">
+    <div class="auth-card">
+      {% block auth_content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

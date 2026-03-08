@@ -1,0 +1,15 @@
+{% extends 'platform/auth_base.html' %}
+{% block title %}Entrar{% endblock %}
+{% block auth_content %}
+<h2>Entrar</h2>
+<p class="muted">Acesse o painel da sua loja.</p>
+<form method="post" class="form-grid">
+  <label>Email<input type="email" name="email" required></label>
+  <label>Senha<input type="password" name="password" required></label>
+  <button class="btn btn-primary">Entrar</button>
+  <a class="btn btn-light" href="{{ url_for('register') }}">Criar conta</a>
+  <div class="helper-box small">
+    Admin master demo: <strong>admin@delivery.com</strong> / <strong>123456</strong>
+  </div>
+</form>
+{% endblock %}

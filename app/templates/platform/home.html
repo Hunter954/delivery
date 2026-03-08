@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Delivery.com - Crie sua loja{% endblock %}
+{% block body %}
+<div class="landing">
+  <header class="topbar container">
+    <div class="brand"><span class="brand-dot"></span>delivery<span>.com</span></div>
+    <nav class="topnav">
+      <a href="{{ url_for('home') }}">Início</a>
+      <a href="{{ url_for('login') }}">Entrar</a>
+      <a class="btn btn-primary" href="{{ url_for('register') }}">Criar conta</a>
+    </nav>
+  </header>
+
+  <section class="hero container">
+    <div class="hero-copy">
+      <span class="pill">SaaS para delivery estilo iFood</span>
+      <h1>Crie sua própria loja de delivery com visual profissional.</h1>
+      <p>Seu cliente compra direto na sua loja, com sua marca, seu cardápio, seu Pix e seu link exclusivo.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Começar agora</a>
+        <a class="btn btn-light btn-lg" href="{{ url_for('login') }}">Já tenho conta</a>
+      </div>
+      <div class="hero-bullets">
+        <span><i class="bi bi-check2-circle"></i> Loja personalizada</span>
+        <span><i class="bi bi-check2-circle"></i> Carrinho e checkout</span>
+        <span><i class="bi bi-check2-circle"></i> Pedidos em tempo real</span>
+      </div>
+    </div>
+    <div class="hero-phone phone-mock red-theme">
+      <div class="phone-notch"></div>
+      <div class="phone-content">
+        <div class="store-banner demo-banner"></div>
+        <div class="store-card overlay-card">
+          <div class="row between center gap-12">
+            <div>
+              <h3>Nativo Lanches</h3>
+              <p class="muted">Smash burger • combos • bebidas</p>
+            </div>
+            <span class="badge badge-soft">4.9</span>
+          </div>
+          <div class="quick-pills">
+            <span>20-35 min</span>
+            <span>R$ 6,00 entrega</span>
+            <span>Pix</span>
+          </div>
+        </div>
+        <div class="demo-products">
+          <div class="demo-product">
+            <div>
+              <strong>Combo Smash Duplo</strong>
+              <p>Pão brioche, 2 carnes, cheddar e fritas.</p>
+              <span>R$ 34,90</span>
+            </div>
+            <button class="icon-btn"><i class="bi bi-plus-lg"></i></button>
+          </div>
+          <div class="demo-product">
+            <div>
+              <strong>Batata Suprema</strong>
+              <p>Batata crocante com cheddar e bacon.</p>
+              <span>R$ 24,90</span>
+            </div>
+            <button class="icon-btn"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section">
+    <div class="section-head">
+      <div>
+        <span class="section-kicker">Lojas em destaque</span>
+        <h2>Exemplos do que já dá para montar no MVP</h2>
+      </div>
+    </div>
+    <div class="store-grid">
+      {% for store in stores %}
+      <a class="store-preview" href="/{{ store.slug }}">
+        <div class="preview-banner" style="background-image:url('{{ store.banner_url or 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop' }}')"></div>
+        <div class="preview-body">
+          <div class="row between center">
+            <h3>{{ store.name }}</h3>
+            <span class="badge">{{ store.city or 'Online' }}</span>
+          </div>
+          <p>{{ store.description or 'Loja personalizada para delivery com cardápio próprio.' }}</p>
+          <div class="row between center muted small">
+            <span><i class="bi bi-shop"></i> /{{ store.slug }}</span>
+            <span><i class="bi bi-arrow-right"></i></span>
+          </div>
+        </div>
+      </a>
+      {% else %}
+      <div class="empty-card">
+        <h3>Nenhuma loja criada ainda</h3>
+        <p>Crie a primeira conta e já configure uma loja demo.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="panel-layout">
+  <aside class="sidebar">
+    <a class="brand brand-panel" href="{{ url_for('dashboard') }}"><span class="brand-dot"></span>delivery<span>.com</span></a>
+    <div class="side-section">
+      <div class="side-title">Painel</div>
+      <a href="{{ url_for('dashboard') }}" class="side-link">Resumo</a>
+      <a href="{{ url_for('create_store') }}" class="side-link">Nova loja</a>
+      <a href="{{ url_for('store_settings') }}" class="side-link">Configurar loja</a>
+      <a href="{{ url_for('categories') }}" class="side-link">Categorias</a>
+      <a href="{{ url_for('products') }}" class="side-link">Produtos</a>
+      <a href="{{ url_for('orders') }}" class="side-link">Pedidos</a>
+      {% if current_user.is_platform_admin %}
+      <a href="{{ url_for('platform_admin') }}" class="side-link">Admin master</a>
+      {% endif %}
+    </div>
+    <div class="side-section">
+      <div class="side-title">Suas lojas</div>
+      {% for item in current_user.stores %}
+      <a href="{{ url_for('switch_store', store_id=item.id) }}" class="side-link small {% if session.get('active_store_id') == item.id %}active{% endif %}">{{ item.name }}</a>
+      {% else %}
+      <div class="muted small">Nenhuma loja ainda</div>
+      {% endfor %}
+    </div>
+    <a class="btn btn-light" href="{{ url_for('logout') }}">Sair</a>
+  </aside>
+  <main class="panel-main">
+    {% block panel_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

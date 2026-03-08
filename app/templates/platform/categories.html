@@ -1,0 +1,27 @@
+{% extends 'platform/dashboard_base.html' %}
+{% block title %}Categorias{% endblock %}
+{% block panel_content %}
+<div class="page-head"><div><h1>Categorias</h1><p class="muted">Organize o cardápio da loja {{ store.name }}.</p></div></div>
+<div class="grid-2">
+  <div class="panel-card form-card">
+    <h3>Nova categoria</h3>
+    <form method="post" class="form-grid">
+      <label>Nome<input type="text" name="name" placeholder="Combos" required></label>
+      <button class="btn btn-primary">Adicionar categoria</button>
+    </form>
+  </div>
+  <div class="panel-card">
+    <h3>Lista de categorias</h3>
+    <div class="list-stack">
+      {% for category in categories %}
+      <div class="list-row">
+        <span>{{ category.name }}</span>
+        <a class="btn btn-danger btn-sm" href="{{ url_for('delete_category', category_id=category.id) }}">Excluir</a>
+      </div>
+      {% else %}
+      <div class="muted">Nenhuma categoria cadastrada.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

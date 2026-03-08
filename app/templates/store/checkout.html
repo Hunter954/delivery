@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - {{ store.name }}{% endblock %}
+{% block body %}
+<div class="storefront-page" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+  <header class="storefront-header container-narrow">
+    <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
+    <div class="brand-mini">Finalizar pedido</div>
+    <div></div>
+  </header>
+  <section class="container-narrow checkout-layout">
+    <div class="panel-card mobile-card">
+      <h1>Checkout</h1>
+      <form method="post" class="form-grid">
+        <label>Nome<input type="text" name="customer_name" required></label>
+        <label>Telefone<input type="text" name="customer_phone" required></label>
+        <label>Tipo de pedido
+          <select name="fulfillment_type">
+            <option value="delivery">Entrega</option>
+            <option value="pickup">Retirada no local</option>
+          </select>
+        </label>
+        <label>Pagamento
+          <select name="payment_method">
+            <option value="pix">Pix</option>
+            <option value="cash">Dinheiro</option>
+            <option value="card">Cartão na entrega</option>
+          </select>
+        </label>
+        <label>Endereço<input type="text" name="customer_address"></label>
+        <label>Observações<textarea name="customer_notes" rows="3"></textarea></label>
+
+        <div class="summary-box">
+          {% for item in items %}
+          <div class="row between"><span>{{ item.quantity }}x {{ item.name }}</span><strong>R$ {{ '%.2f'|format(item.total) }}</strong></div>
+          {% endfor %}
+          <hr>
+          <div class="row between"><span>Subtotal</span><strong>R$ {{ '%.2f'|format(subtotal) }}</strong></div>
+          <div class="row between"><span>Entrega</span><strong>R$ {{ '%.2f'|format(delivery_fee) }}</strong></div>
+          <div class="row between total-line"><span>Total</span><strong>R$ {{ '%.2f'|format(total) }}</strong></div>
+        </div>
+
+        {% if store.pix_key %}
+        <div class="helper-box">
+          <strong>Pagamento via Pix</strong>
+          <p>Chave: {{ store.pix_key }}</p>
+          <p>Recebedor: {{ store.pix_holder or store.name }}</p>
+        </div>
+        {% endif %}
+
+        <button class="btn btn-primary full btn-lg">Fazer pedido</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
