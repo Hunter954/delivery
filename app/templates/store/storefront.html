@@ -13,7 +13,7 @@
     <div class="store-logo-float" style="background-image:url('{{ store.logo_url or store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' }}')"></div>
     <div class="store-card overlay-card store-main-card app-card v4-store-card">
       <div class="store-card-top">
-        <div>
+        <div class="store-card-copy">
           <h1>{{ store.name }}</h1>
           <p class="muted v4-desc">{{ store.description or 'Deliciosos e autênticos hambúrgueres artesanais com a melhor carne.' }}</p>
         </div>
@@ -30,7 +30,7 @@
         <i class="bi bi-search"></i>
         <input type="text" name="q" value="{{ query or '' }}" placeholder="Busque lanches, combos, bebidas...">
       </form>
-      <div class="category-chips nav-dots v4-category-chips">
+      <div class="category-chips nav-dots v4-category-chips no-scrollbar">
         {% if featured %}<button type="button" data-category-chip="#featured-section">Destaques</button>{% endif %}
         {% for category in categories %}
           <button type="button" data-category-chip="#cat-{{ category.id }}">{{ category.name }}</button>
@@ -41,8 +41,8 @@
 
   <section class="container-narrow section-store app-sections">
     {% if featured %}
-    <div class="menu-section" id="featured-section">
-      <div class="section-head compact-head v4-head">
+    <div class="menu-section featured-section-v4" id="featured-section">
+      <div class="section-head compact-head v4-head intro-spacing">
         <div>
           <span class="section-kicker">Escolhidos para você</span>
           <h2>Destaques</h2>
@@ -53,18 +53,24 @@
         <div class="featured-card v4-featured-card app-card">
           <div class="featured-image left-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=800&auto=format&fit=crop' }}')"></div>
           <div class="featured-body v4-featured-body">
-            <div class="row between start gap-8">
-              <div>
-                <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
-                <strong>{{ product.name }}</strong>
+            <div class="featured-copy">
+              <div class="product-head-row align-start-row">
+                <div class="title-group">
+                  <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
+                  <strong>{{ product.name }}</strong>
+                </div>
+                <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
               </div>
-              <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
+              <p class="desc-clamp-3">{{ product.description or 'Produto em destaque da loja.' }}</p>
             </div>
-            <p class="desc-clamp-3">{{ product.description or 'Produto em destaque da loja.' }}</p>
-            <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="product-inline-actions">
-              <div class="qty-inline"><button class="qty-btn light" type="button" data-qty-minus>-</button><span class="qty-value" data-qty-value>1</span><button class="qty-btn light" type="button" data-qty-plus>+</button></div>
+            <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="product-inline-actions product-inline-actions-hero">
+              <div class="qty-inline qty-pill">
+                <button class="qty-btn light" type="button" data-qty-minus><i class="bi bi-dash-lg"></i></button>
+                <span class="qty-value" data-qty-value>1</span>
+                <button class="qty-btn light" type="button" data-qty-plus><i class="bi bi-plus-lg"></i></button>
+              </div>
               <input type="hidden" name="quantity" value="1" data-qty-input>
-              <button class="btn btn-primary btn-sm">Adicionar</button>
+              <button class="btn btn-primary btn-sm add-btn-red">Adicionar</button>
             </form>
           </div>
         </div>
@@ -88,18 +94,18 @@
           <div class="menu-card app-card menu-card-v4">
             <div class="menu-image-left" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
             <div class="menu-copy-tight">
-              <div class="product-head-row">
+              <div class="product-head-row card-head-row">
                 <strong>{{ product.name }}</strong>
                 <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
               </div>
               <p class="desc-clamp-3">{{ product.description or 'Descrição do produto.' }}</p>
               <div class="menu-actions-line">
                 <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
-                <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="qty-inline compact end-form">
-                  <button class="qty-btn light" type="button" data-qty-minus>-</button>
+                <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="qty-inline compact end-form qty-inline-card">
+                  <button class="qty-btn light" type="button" data-qty-minus><i class="bi bi-dash-lg"></i></button>
                   <span class="qty-value" data-qty-value>1</span>
                   <input type="hidden" name="quantity" value="1" data-qty-input>
-                  <button class="qty-btn light" type="button" data-qty-plus>+</button>
+                  <button class="qty-btn light" type="button" data-qty-plus><i class="bi bi-plus-lg"></i></button>
                   <button class="qty-btn primary add-square" type="submit"><i class="bi bi-plus-lg"></i></button>
                 </form>
               </div>
