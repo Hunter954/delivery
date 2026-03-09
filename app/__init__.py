@@ -2,9 +2,11 @@ import base64
 import io
 import os
 from collections import defaultdict
+from urllib.parse import urlencode
 from functools import wraps
 
 import qrcode
+from itsdangerous import BadSignature, URLSafeSerializer
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from slugify import slugify
@@ -71,9 +73,12 @@ def register_template_helpers(app):
     def inject_helpers():
         recent_orders = session.get('recent_orders', {})
         current_slug = request.view_args.get('slug') if request.view_args else None
+        current_tokens = request.args.getlist('t') if request.args else []
         return {
             'cart_count': sum(item.get('quantity', 0) for item in session.get('cart', {}).values()),
             'recent_orders_count': len(recent_orders.get(current_slug, [])) if current_slug else 0,
+            'current_order_tokens': current_tokens,
+            'current_order_tokens_query': urlencode([('t', token) for token in current_tokens]),
         }
 
 
@@ -361,23 +366,7 @@ def register_routes(app):
                 continue
             grouped_products[product.category_id].append(product)
         featured = Product.query.filter_by(store_id=store.id, is_active=True, is_featured=True).limit(8).all()
-
-        cart = session.get('cart', {})
-        cart_quantities = {}
-        for item in cart.values():
-            if item.get('store_id') != store.id:
-                continue
-            cart_quantities[item.get('product_id')] = item.get('quantity', 0)
-
-        return render_template(
-            'store/storefront.html',
-            store=store,
-            categories=categories,
-            grouped_products=grouped_products,
-            featured=featured,
-            query=q,
-            cart_quantities=cart_quantities,
-        )
+        return render_template('store/storefront.html', store=store, categories=categories, grouped_products=grouped_products, featured=featured, query=q)
 
     @app.route('/<slug>/cart/add/<int:product_id>', methods=['POST'])
     def add_to_cart(slug, product_id):
@@ -423,32 +412,6 @@ def register_routes(app):
         flash('Carrinho atualizado.', 'info')
         return redirect(url_for('view_cart', slug=slug))
 
-    @app.route('/<slug>/cart/change/<int:product_id>', methods=['POST'])
-    def change_cart_quantity(slug, product_id):
-        store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
-        product = Product.query.filter_by(id=product_id, store_id=store.id, is_active=True).first_or_404()
-        delta = int(request.form.get('delta', 0) or 0)
-        cart = session.get('cart', {})
-        key = f'{store.id}:{product.id}'
-
-        if key not in cart and delta > 0:
-            cart[key] = {
-                'store_id': store.id,
-                'product_id': product.id,
-                'name': product.name,
-                'price': product.price,
-                'image_url': product.image_url,
-                'quantity': 0,
-            }
-
-        if key in cart:
-            cart[key]['quantity'] = max(0, cart[key].get('quantity', 0) + delta)
-            if cart[key]['quantity'] <= 0:
-                cart.pop(key, None)
-
-        session['cart'] = cart
-        return redirect(request.referrer or url_for('public_store', slug=slug))
-
     @app.route('/<slug>/checkout', methods=['GET', 'POST'])
     def checkout(slug):
         store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
@@ -464,6 +427,7 @@ def register_routes(app):
         if request.method == 'POST':
             customer_name = request.form.get('customer_name', '').strip()
             customer_phone = request.form.get('customer_phone', '').strip()
+            customer_cpf = digits_only(request.form.get('customer_cpf', '').strip())
             customer_notes = request.form.get('customer_notes', '').strip()
             fulfillment_type = request.form.get('fulfillment_type', 'delivery')
             payment_method = request.form.get('payment_method', 'pix')
@@ -482,6 +446,7 @@ def register_routes(app):
             session['customer_info'] = {
                 'customer_name': customer_name,
                 'customer_phone': customer_phone,
+                'customer_cpf': customer_cpf,
                 'customer_zipcode': zipcode,
                 'customer_street': street,
                 'customer_number': number,
@@ -495,8 +460,14 @@ def register_routes(app):
                 'customer_notes': customer_notes,
             }
 
-            if not customer_name or not customer_phone:
-                flash('Informe nome e telefone.', 'danger')
+            if not customer_name or ' ' not in customer_name.strip():
+                flash('Informe nome e sobrenome.', 'danger')
+                return redirect(url_for('checkout', slug=slug))
+            if not customer_phone:
+                flash('Informe telefone.', 'danger')
+                return redirect(url_for('checkout', slug=slug))
+            if len(customer_cpf) != 11:
+                flash('Informe um CPF válido com 11 dígitos.', 'danger')
                 return redirect(url_for('checkout', slug=slug))
             if fulfillment_type == 'delivery' and (not street or not number or not neighborhood):
                 flash('Preencha CEP, rua, número e bairro para entrega.', 'danger')
@@ -509,7 +480,7 @@ def register_routes(app):
                 customer_name=customer_name,
                 customer_phone=customer_phone,
                 customer_address=customer_address,
-                customer_notes=customer_notes,
+                customer_notes=prepend_cpf_to_notes(customer_cpf, customer_notes),
                 fulfillment_type=fulfillment_type,
                 payment_method=payment_method,
                 subtotal=subtotal,
@@ -545,25 +516,83 @@ def register_routes(app):
         if order.payment_method == 'pix' and store.pix_key:
             pix_code = build_pix_payload(store, order)
             pix_qr_base64 = build_qr_base64(pix_code)
-        return render_template('store/order_success.html', store=store, order=order, pix_code=pix_code, pix_qr_base64=pix_qr_base64)
+        order_token = make_order_token(slug, order.id)
+        return render_template('store/order_success.html', store=store, order=order, pix_code=pix_code, pix_qr_base64=pix_qr_base64, order_token=order_token)
 
     @app.route('/<slug>/meus-pedidos')
     def my_orders(slug):
         store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
-        ids = session.get('recent_orders', {}).get(slug, [])
+        ids = list(session.get('recent_orders', {}).get(slug, []))
+        ids.extend(parse_order_tokens(slug, request.args.getlist('t')))
+        ids = unique_ints(ids)
         orders = []
+        order_tokens = {}
         if ids:
             orders = Order.query.filter(Order.store_id == store.id, Order.id.in_(ids)).order_by(Order.created_at.desc()).all()
-        return render_template('store/my_orders.html', store=store, orders=orders)
+            order_tokens = {order.id: make_order_token(slug, order.id) for order in orders}
+        return render_template('store/my_orders.html', store=store, orders=orders, order_tokens=order_tokens)
 
     @app.route('/<slug>/pedido/<int:order_id>')
     def order_detail(slug, order_id):
         store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
-        if order_id not in session.get('recent_orders', {}).get(slug, []):
+        allowed_ids = set(session.get('recent_orders', {}).get(slug, []))
+        allowed_ids.update(parse_order_tokens(slug, request.args.getlist('t')))
+        if order_id not in allowed_ids:
             abort(403)
         order = Order.query.filter_by(id=order_id, store_id=store.id).first_or_404()
-        return render_template('store/order_detail.html', store=store, order=order)
+        order_token = make_order_token(slug, order.id)
+        return render_template('store/order_detail.html', store=store, order=order, order_token=order_token)
 
+
+
+def digits_only(value):
+    return ''.join(ch for ch in (value or '') if ch.isdigit())
+
+
+def prepend_cpf_to_notes(customer_cpf, customer_notes):
+    note = (customer_notes or '').strip()
+    cpf_label = f'CPF: {format_cpf(customer_cpf)}' if customer_cpf else ''
+    return ' | '.join([part for part in [cpf_label, note] if part])
+
+
+def format_cpf(value):
+    digits = digits_only(value)
+    if len(digits) != 11:
+        return value or ''
+    return f'{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}'
+
+
+def get_order_serializer():
+    return URLSafeSerializer(os.getenv('SECRET_KEY', 'dev-secret-key'), salt='delivery-order-token')
+
+
+def make_order_token(slug, order_id):
+    return get_order_serializer().dumps({'slug': slug, 'order_id': int(order_id)})
+
+
+def parse_order_tokens(slug, tokens):
+    serializer = get_order_serializer()
+    ids = []
+    for token in tokens or []:
+        try:
+            payload = serializer.loads(token)
+        except BadSignature:
+            continue
+        if payload.get('slug') == slug and payload.get('order_id'):
+            ids.append(int(payload['order_id']))
+    return ids
+
+
+def unique_ints(values):
+    out = []
+    for value in values:
+        try:
+            ivalue = int(value)
+        except (TypeError, ValueError):
+            continue
+        if ivalue not in out:
+            out.append(ivalue)
+    return out
 
 def ensure_default_categories(store):
     defaults = ['Combos', 'Lanches', 'Bebidas', 'Sobremesas']

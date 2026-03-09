@@ -5,18 +5,23 @@
   <header class="storefront-header container-narrow glass-topbar">
     <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
     <div class="brand-mini">Finalizar pedido</div>
-    <a href="{{ url_for('my_orders', slug=store.slug) }}" class="icon-circle"><i class="bi bi-receipt"></i></a>
+    <a href="{{ url_for('my_orders', slug=store.slug) }}" class="icon-circle" data-orders-link data-store-slug="{{ store.slug }}"><i class="bi bi-receipt"></i></a>
   </header>
   <section class="container-narrow checkout-layout">
     <div class="panel-card mobile-card order-mobile-card">
       <h1>Entrega e pagamento</h1>
       <form method="post" class="form-grid checkout-form">
-        <label>Nome
-          <input type="text" name="customer_name" value="{{ customer_info.customer_name or '' }}" required>
-        </label>
-        <label>Telefone
-          <input type="text" name="customer_phone" value="{{ customer_info.customer_phone or '' }}" required>
-        </label>
+        <div class="form-grid cols-2 compact-grid">
+          <label class="full">Nome e sobrenome
+            <input type="text" name="customer_name" value="{{ customer_info.customer_name or '' }}" placeholder="Ex.: João da Silva" required>
+          </label>
+          <label>Telefone
+            <input type="text" name="customer_phone" value="{{ customer_info.customer_phone or '' }}" required>
+          </label>
+          <label>CPF
+            <input type="text" name="customer_cpf" value="{{ customer_info.customer_cpf or '' }}" placeholder="000.000.000-00" maxlength="14" data-cpf-input required>
+          </label>
+        </div>
 
         <div class="form-grid cols-2 compact-grid">
           <label>Tipo de pedido
@@ -35,8 +40,8 @@
         </div>
 
         <div class="helper-box address-helper">
-          <strong>Endereço</strong>
-          <p>Digite o CEP e preencha o restante. O sistema tenta buscar rua, bairro, cidade e estado automaticamente.</p>
+          <strong>Endereço detalhado</strong>
+          <p>Digite o CEP para preencher rua, bairro, cidade e estado automaticamente. Depois informe o número e complemento.</p>
         </div>
 
         <div class="form-grid cols-2 compact-grid" data-address-block>
