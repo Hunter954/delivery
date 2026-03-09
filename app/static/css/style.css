@@ -707,3 +707,156 @@ html, body { overflow-x: hidden; }
     font-size: 15px;
   }
 }
+
+
+/* patch v12: redmi alignment fixes */
+.store-topbar.no-cart-topbar {
+  position: relative;
+  grid-template-columns: 56px minmax(0,1fr);
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+}
+.store-topbar.no-cart-topbar .topbar-title {
+  padding-right: 56px;
+}
+.store-topbar.no-cart-topbar .topbar-spacer { display:none; }
+.store-hero-logo {
+  bottom: -54px;
+  width: 144px;
+  height: 144px;
+}
+.store-summary-card {
+  margin-top: 72px;
+}
+.summary-head-row { align-items: center; }
+.summary-description { margin: 8px 0 14px; }
+.summary-meta-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  align-items: center;
+}
+.meta-pill {
+  height: 48px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 16px;
+}
+.meta-pill i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.product-row-card {
+  grid-template-columns: 104px minmax(0,1fr);
+  gap: 14px;
+  padding: 14px;
+  overflow: hidden;
+}
+.product-thumb {
+  width: 104px;
+  min-height: 148px;
+  border-radius: 22px;
+}
+.product-row-main {
+  gap: 8px;
+  align-content: stretch;
+}
+.product-head-row {
+  gap: 8px;
+  align-items: start;
+}
+.product-head-row h3 {
+  font-size: 18px;
+  line-height: 1.05;
+}
+.product-price {
+  font-size: 17px;
+  line-height: 1;
+  padding-top: 0;
+}
+.product-description {
+  font-size: 14px;
+  line-height: 1.34;
+}
+.product-action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.qty-stepper {
+  flex: 0 0 108px;
+  width: 108px;
+  height: 44px;
+  grid-template-columns: 36px 1fr 36px;
+  border-radius: 14px;
+}
+.qty-btn,
+.qty-value,
+.add-btn {
+  height: 44px;
+}
+.qty-btn { font-size: 20px; }
+.qty-value {
+  font-size: 16px;
+}
+.add-btn {
+  flex: 0 0 108px;
+  width: 108px;
+  min-width: 108px;
+  border-radius: 14px;
+  font-size: 15px;
+  padding: 0 12px;
+  box-shadow: none;
+}
+@media (max-width: 380px) {
+  .store-topbar.no-cart-topbar {
+    grid-template-columns: 52px minmax(0,1fr);
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .store-topbar.no-cart-topbar .topbar-title { padding-right: 52px; }
+  .store-hero-wrap,
+  .store-content-stack { padding-left: 12px; padding-right: 12px; }
+  .store-summary-card,
+  .store-category-bar { margin-left: 12px; margin-right: 12px; }
+  .store-hero-logo {
+    width: 132px;
+    height: 132px;
+    bottom: -50px;
+  }
+  .store-summary-card { margin-top: 66px; }
+  .summary-head-row h1 { font-size: 26px; }
+  .summary-meta-row { gap: 8px; }
+  .meta-pill {
+    height: 44px;
+    padding: 0 12px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .product-row-card {
+    grid-template-columns: 92px minmax(0,1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+  .product-thumb {
+    width: 92px;
+    min-height: 138px;
+    border-radius: 18px;
+  }
+  .product-head-row h3 { font-size: 17px; }
+  .product-price { font-size: 16px; }
+  .product-description { font-size: 13px; }
+  .product-action-row { gap: 8px; }
+  .qty-stepper {
+    flex-basis: 98px;
+    width: 98px;
+    grid-template-columns: 32px 1fr 32px;
+  }
+  .add-btn {
+    flex-basis: 98px;
+    width: 98px;
+    min-width: 98px;
+    font-size: 14px;
+  }
+}

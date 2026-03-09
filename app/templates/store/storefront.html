@@ -3,10 +3,9 @@
 {% block body %}
 <div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color or '#ea1d2c' }}; --store-secondary: {{ store.secondary_color or '#111827' }}; --store-accent: {{ store.accent_color or '#fff1f2' }};">
   <div class="app-mobile-frame">
-    <header class="store-topbar glass-topbar">
+    <header class="store-topbar glass-topbar no-cart-topbar">
       <a href="{{ url_for('home') }}" class="topbar-icon" aria-label="Voltar"><i class="bi bi-arrow-left"></i></a>
       <div class="topbar-title">{{ store.name }}</div>
-      <div class="topbar-spacer"></div>
     </header>
 
     <section class="store-hero-wrap">
