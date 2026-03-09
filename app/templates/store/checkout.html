@@ -1,53 +1,94 @@
 {% extends 'base.html' %}
 {% block title %}Checkout - {{ store.name }}{% endblock %}
 {% block body %}
-<div class="storefront-page" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
-  <header class="storefront-header container-narrow">
+<div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+  <header class="storefront-header container-narrow glass-topbar">
     <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
     <div class="brand-mini">Finalizar pedido</div>
-    <div></div>
+    <a href="{{ url_for('my_orders', slug=store.slug) }}" class="icon-circle"><i class="bi bi-receipt"></i></a>
   </header>
   <section class="container-narrow checkout-layout">
-    <div class="panel-card mobile-card">
-      <h1>Checkout</h1>
-      <form method="post" class="form-grid">
-        <label>Nome<input type="text" name="customer_name" required></label>
-        <label>Telefone<input type="text" name="customer_phone" required></label>
-        <label>Tipo de pedido
-          <select name="fulfillment_type">
-            <option value="delivery">Entrega</option>
-            <option value="pickup">Retirada no local</option>
-          </select>
+    <div class="panel-card mobile-card order-mobile-card">
+      <h1>Entrega e pagamento</h1>
+      <form method="post" class="form-grid checkout-form">
+        <label>Nome
+          <input type="text" name="customer_name" value="{{ customer_info.customer_name or '' }}" required>
         </label>
-        <label>Pagamento
-          <select name="payment_method">
-            <option value="pix">Pix</option>
-            <option value="cash">Dinheiro</option>
-            <option value="card">Cartão na entrega</option>
-          </select>
+        <label>Telefone
+          <input type="text" name="customer_phone" value="{{ customer_info.customer_phone or '' }}" required>
         </label>
-        <label>Endereço<input type="text" name="customer_address"></label>
-        <label>Observações<textarea name="customer_notes" rows="3"></textarea></label>
 
-        <div class="summary-box">
+        <div class="form-grid cols-2 compact-grid">
+          <label>Tipo de pedido
+            <select name="fulfillment_type">
+              <option value="delivery" {% if (customer_info.fulfillment_type or 'delivery') == 'delivery' %}selected{% endif %}>Entrega</option>
+              <option value="pickup" {% if customer_info.fulfillment_type == 'pickup' %}selected{% endif %}>Retirada</option>
+            </select>
+          </label>
+          <label>Pagamento
+            <select name="payment_method">
+              <option value="pix" {% if (customer_info.payment_method or 'pix') == 'pix' %}selected{% endif %}>Pix</option>
+              <option value="cash" {% if customer_info.payment_method == 'cash' %}selected{% endif %}>Dinheiro</option>
+              <option value="card" {% if customer_info.payment_method == 'card' %}selected{% endif %}>Cartão na entrega</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="helper-box address-helper">
+          <strong>Endereço</strong>
+          <p>Digite o CEP e preencha o restante. O sistema tenta buscar rua, bairro, cidade e estado automaticamente.</p>
+        </div>
+
+        <div class="form-grid cols-2 compact-grid" data-address-block>
+          <label>CEP
+            <input type="text" name="customer_zipcode" value="{{ customer_info.customer_zipcode or '' }}" placeholder="00000-000" data-cep-input>
+            <small class="muted" data-cep-status></small>
+          </label>
+          <label>Número
+            <input type="text" name="customer_number" value="{{ customer_info.customer_number or '' }}" placeholder="123">
+          </label>
+          <label class="full">Rua
+            <input type="text" name="customer_street" value="{{ customer_info.customer_street or '' }}" placeholder="Rua / Avenida">
+          </label>
+          <label>Bairro
+            <input type="text" name="customer_neighborhood" value="{{ customer_info.customer_neighborhood or '' }}">
+          </label>
+          <label>Complemento
+            <input type="text" name="customer_complement" value="{{ customer_info.customer_complement or '' }}" placeholder="Ap, bloco, casa...">
+          </label>
+          <label>Cidade
+            <input type="text" name="customer_city" value="{{ customer_info.customer_city or '' }}">
+          </label>
+          <label>Estado
+            <input type="text" name="customer_state" value="{{ customer_info.customer_state or '' }}">
+          </label>
+          <label class="full">Referência
+            <input type="text" name="customer_reference" value="{{ customer_info.customer_reference or '' }}" placeholder="Perto de...">
+          </label>
+        </div>
+
+        <label>Observações
+          <textarea name="customer_notes" rows="3">{{ customer_info.customer_notes or '' }}</textarea>
+        </label>
+
+        <div class="summary-box order-summary-box">
           {% for item in items %}
           <div class="row between"><span>{{ item.quantity }}x {{ item.name }}</span><strong>R$ {{ '%.2f'|format(item.total) }}</strong></div>
           {% endfor %}
           <hr>
           <div class="row between"><span>Subtotal</span><strong>R$ {{ '%.2f'|format(subtotal) }}</strong></div>
-          <div class="row between"><span>Entrega</span><strong>R$ {{ '%.2f'|format(delivery_fee) }}</strong></div>
-          <div class="row between total-line"><span>Total</span><strong>R$ {{ '%.2f'|format(total) }}</strong></div>
+          <div class="row between"><span>Entrega</span><strong data-delivery-preview data-delivery-fee="{{ '%.2f'|format(store.delivery_fee) }}" data-subtotal="{{ '%.2f'|format(subtotal) }}">R$ {{ '%.2f'|format(delivery_fee) }}</strong></div>
+          <div class="row between total-line"><span>Total</span><strong data-total-value>R$ {{ '%.2f'|format(total) }}</strong></div>
         </div>
 
         {% if store.pix_key %}
-        <div class="helper-box">
-          <strong>Pagamento via Pix</strong>
-          <p>Chave: {{ store.pix_key }}</p>
-          <p>Recebedor: {{ store.pix_holder or store.name }}</p>
+        <div class="helper-box pix-tip-box">
+          <strong>Pix pronto após finalizar</strong>
+          <p>Assim que você confirmar, vamos mostrar o QR Code e o código copia e cola.</p>
         </div>
         {% endif %}
 
-        <button class="btn btn-primary full btn-lg">Fazer pedido</button>
+        <button class="btn btn-primary full btn-lg">Finalizar pedido</button>
       </form>
     </div>
   </section>

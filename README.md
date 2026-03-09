@@ -10,6 +10,10 @@ Plataforma SaaS multi-tenant para criação de lojas de delivery estilo iFood, c
 - Categorias e produtos
 - Loja pública mobile-first
 - Carrinho em sessão
+- Meus pedidos no navegador (não some ao atualizar)
+- Checkout mobile com ViaCEP
+- QR Code Pix e copia e cola após finalizar
+- SQLite persistente em /data quando DATABASE_URL não for definido
 - Checkout com entrega ou retirada
 - Configuração de Pix por chave ou texto
 - Painel de pedidos

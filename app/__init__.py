@@ -1,7 +1,10 @@
+import base64
+import io
 import os
 from collections import defaultdict
 from functools import wraps
 
+import qrcode
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from slugify import slugify
@@ -16,11 +19,20 @@ login_manager.login_view = 'login'
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
-    database_url = os.getenv('DATABASE_URL', 'sqlite:///delivery_saas.db')
+
+    default_sqlite_path = '/data/delivery_saas.db'
+    try:
+        os.makedirs('/data', exist_ok=True)
+    except Exception:
+        default_sqlite_path = os.path.join(app.instance_path, 'delivery_saas.db')
+        os.makedirs(app.instance_path, exist_ok=True)
+
+    database_url = os.getenv('DATABASE_URL', f'sqlite:///{default_sqlite_path}')
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql+psycopg://', 1)
     elif database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -57,10 +69,12 @@ def bootstrap_platform_admin():
 def register_template_helpers(app):
     @app.context_processor
     def inject_helpers():
+        recent_orders = session.get('recent_orders', {})
+        current_slug = request.view_args.get('slug') if request.view_args else None
         return {
             'cart_count': sum(item.get('quantity', 0) for item in session.get('cart', {}).values()),
+            'recent_orders_count': len(recent_orders.get(current_slug, [])) if current_slug else 0,
         }
-
 
 
 def owner_required(fn):
@@ -73,13 +87,11 @@ def owner_required(fn):
     return wrapper
 
 
-
 def get_current_store_or_none():
     store_id = session.get('active_store_id')
     if not store_id or not current_user.is_authenticated:
         return None
     return Store.query.filter_by(id=store_id, owner_id=current_user.id).first()
-
 
 
 def require_store_setup():
@@ -88,7 +100,6 @@ def require_store_setup():
         flash('Crie ou selecione uma loja para continuar.', 'warning')
         return redirect(url_for('dashboard'))
     return store
-
 
 
 def register_routes(app):
@@ -208,32 +219,32 @@ def register_routes(app):
         if request.method == 'POST':
             store.name = request.form.get('name', store.name).strip()
             new_slug = slugify(request.form.get('slug', store.slug).strip() or store.slug)
-            exists = Store.query.filter(Store.slug == new_slug, Store.id != store.id).first()
-            if exists:
+            existing_store = Store.query.filter_by(slug=new_slug).first()
+            if existing_store and existing_store.id != store.id:
                 flash('Este slug já está em uso.', 'danger')
                 return redirect(url_for('store_settings'))
             store.slug = new_slug
-            store.description = request.form.get('description', '')
-            store.logo_url = request.form.get('logo_url', '')
-            store.banner_url = request.form.get('banner_url', '')
-            store.primary_color = request.form.get('primary_color', '#EA1D2C')
-            store.secondary_color = request.form.get('secondary_color', '#1A1A1A')
-            store.accent_color = request.form.get('accent_color', '#FEE7EA')
-            store.pix_key = request.form.get('pix_key', '')
-            store.pix_holder = request.form.get('pix_holder', '')
-            store.min_order_value = float(request.form.get('min_order_value') or 0)
+            store.description = request.form.get('description', '').strip()
+            store.logo_url = request.form.get('logo_url', '').strip()
+            store.banner_url = request.form.get('banner_url', '').strip()
+            store.primary_color = request.form.get('primary_color', store.primary_color)
+            store.secondary_color = request.form.get('secondary_color', store.secondary_color)
+            store.accent_color = request.form.get('accent_color', store.accent_color)
+            store.estimated_time = request.form.get('estimated_time', store.estimated_time).strip()
             store.delivery_fee = float(request.form.get('delivery_fee') or 0)
-            store.estimated_time = request.form.get('estimated_time', '20-40 min')
-            store.whatsapp = request.form.get('whatsapp', '')
-            store.address = request.form.get('address', '')
-            store.city = request.form.get('city', '')
-            store.state = request.form.get('state', '')
-            store.open_time = request.form.get('open_time', '18:00')
-            store.close_time = request.form.get('close_time', '23:30')
+            store.min_order_value = float(request.form.get('min_order_value') or 0)
+            store.whatsapp = request.form.get('whatsapp', '').strip()
+            store.address = request.form.get('address', '').strip()
+            store.city = request.form.get('city', '').strip()
+            store.state = request.form.get('state', '').strip()
+            store.open_time = request.form.get('open_time', store.open_time).strip()
+            store.close_time = request.form.get('close_time', store.close_time).strip()
+            store.pix_holder = request.form.get('pix_holder', '').strip()
+            store.pix_key = request.form.get('pix_key', '').strip()
             store.is_open = request.form.get('is_open') == 'on'
             store.is_active = request.form.get('is_active') == 'on'
             db.session.commit()
-            flash('Configurações salvas.', 'success')
+            flash('Configurações salvas com sucesso.', 'success')
             return redirect(url_for('store_settings'))
         return render_template('platform/store_settings.html', store=store)
 
@@ -343,10 +354,14 @@ def register_routes(app):
         store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
         categories = Category.query.filter_by(store_id=store.id, is_active=True).order_by(Category.sort_order.asc()).all()
         grouped_products = defaultdict(list)
-        for product in Product.query.filter_by(store_id=store.id, is_active=True).order_by(Product.is_featured.desc(), Product.created_at.desc()).all():
+        all_products = Product.query.filter_by(store_id=store.id, is_active=True).order_by(Product.is_featured.desc(), Product.created_at.desc()).all()
+        q = request.args.get('q', '').strip().lower()
+        for product in all_products:
+            if q and q not in f'{product.name} {product.description or ""}'.lower():
+                continue
             grouped_products[product.category_id].append(product)
         featured = Product.query.filter_by(store_id=store.id, is_active=True, is_featured=True).limit(8).all()
-        return render_template('store/storefront.html', store=store, categories=categories, grouped_products=grouped_products, featured=featured)
+        return render_template('store/storefront.html', store=store, categories=categories, grouped_products=grouped_products, featured=featured, query=q)
 
     @app.route('/<slug>/cart/add/<int:product_id>', methods=['POST'])
     def add_to_cart(slug, product_id):
@@ -366,7 +381,7 @@ def register_routes(app):
         cart[key]['quantity'] += int(request.form.get('quantity', 1) or 1)
         session['cart'] = cart
         flash(f'{product.name} adicionado ao carrinho.', 'success')
-        return redirect(url_for('public_store', slug=slug))
+        return redirect(request.referrer or url_for('public_store', slug=slug))
 
     @app.route('/<slug>/cart')
     def view_cart(slug):
@@ -399,21 +414,53 @@ def register_routes(app):
         if not items:
             flash('Seu carrinho está vazio.', 'warning')
             return redirect(url_for('public_store', slug=slug))
-        delivery_fee = store.delivery_fee
+
+        customer_info = session.get('customer_info', {})
+        selected_type = request.form.get('fulfillment_type') or customer_info.get('fulfillment_type', 'delivery')
+        delivery_fee = 0 if selected_type == 'pickup' else store.delivery_fee
+
         if request.method == 'POST':
             customer_name = request.form.get('customer_name', '').strip()
             customer_phone = request.form.get('customer_phone', '').strip()
-            customer_address = request.form.get('customer_address', '').strip()
             customer_notes = request.form.get('customer_notes', '').strip()
             fulfillment_type = request.form.get('fulfillment_type', 'delivery')
             payment_method = request.form.get('payment_method', 'pix')
+
+            zipcode = request.form.get('customer_zipcode', '').strip()
+            street = request.form.get('customer_street', '').strip()
+            number = request.form.get('customer_number', '').strip()
+            complement = request.form.get('customer_complement', '').strip()
+            neighborhood = request.form.get('customer_neighborhood', '').strip()
+            city = request.form.get('customer_city', '').strip()
+            state = request.form.get('customer_state', '').strip()
+            reference = request.form.get('customer_reference', '').strip()
+
+            customer_address = format_address(street, number, neighborhood, city, state, zipcode, complement, reference)
+
+            session['customer_info'] = {
+                'customer_name': customer_name,
+                'customer_phone': customer_phone,
+                'customer_zipcode': zipcode,
+                'customer_street': street,
+                'customer_number': number,
+                'customer_complement': complement,
+                'customer_neighborhood': neighborhood,
+                'customer_city': city,
+                'customer_state': state,
+                'customer_reference': reference,
+                'fulfillment_type': fulfillment_type,
+                'payment_method': payment_method,
+                'customer_notes': customer_notes,
+            }
+
             if not customer_name or not customer_phone:
                 flash('Informe nome e telefone.', 'danger')
                 return redirect(url_for('checkout', slug=slug))
-            if fulfillment_type == 'delivery' and not customer_address:
-                flash('Informe o endereço para entrega.', 'danger')
+            if fulfillment_type == 'delivery' and (not street or not number or not neighborhood):
+                flash('Preencha CEP, rua, número e bairro para entrega.', 'danger')
                 return redirect(url_for('checkout', slug=slug))
-            final_delivery_fee = 0 if fulfillment_type == 'pickup' else delivery_fee
+
+            final_delivery_fee = 0 if fulfillment_type == 'pickup' else store.delivery_fee
             total = subtotal + final_delivery_fee
             order = Order(
                 store_id=store.id,
@@ -438,10 +485,42 @@ def register_routes(app):
                     total_price=item['total'],
                 ))
             db.session.commit()
+            remember_recent_order(store.slug, order.id)
             clear_store_cart(store.id)
-            return render_template('store/order_success.html', store=store, order=order)
+            return redirect(url_for('order_success', slug=slug, order_id=order.id))
+
         total = subtotal + delivery_fee
-        return render_template('store/checkout.html', store=store, items=items, subtotal=subtotal, delivery_fee=delivery_fee, total=total)
+        return render_template('store/checkout.html', store=store, items=items, subtotal=subtotal, delivery_fee=delivery_fee, total=total, customer_info=customer_info)
+
+    @app.route('/<slug>/pedido/<int:order_id>/sucesso')
+    def order_success(slug, order_id):
+        store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
+        order = Order.query.filter_by(id=order_id, store_id=store.id).first_or_404()
+        if order.id not in session.get('recent_orders', {}).get(slug, []):
+            abort(403)
+        pix_code = None
+        pix_qr_base64 = None
+        if order.payment_method == 'pix' and store.pix_key:
+            pix_code = build_pix_payload(store, order)
+            pix_qr_base64 = build_qr_base64(pix_code)
+        return render_template('store/order_success.html', store=store, order=order, pix_code=pix_code, pix_qr_base64=pix_qr_base64)
+
+    @app.route('/<slug>/meus-pedidos')
+    def my_orders(slug):
+        store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
+        ids = session.get('recent_orders', {}).get(slug, [])
+        orders = []
+        if ids:
+            orders = Order.query.filter(Order.store_id == store.id, Order.id.in_(ids)).order_by(Order.created_at.desc()).all()
+        return render_template('store/my_orders.html', store=store, orders=orders)
+
+    @app.route('/<slug>/pedido/<int:order_id>')
+    def order_detail(slug, order_id):
+        store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
+        if order_id not in session.get('recent_orders', {}).get(slug, []):
+            abort(403)
+        order = Order.query.filter_by(id=order_id, store_id=store.id).first_or_404()
+        return render_template('store/order_detail.html', store=store, order=order)
 
 
 def ensure_default_categories(store):
@@ -450,7 +529,6 @@ def ensure_default_categories(store):
         for i, name in enumerate(defaults, start=1):
             db.session.add(Category(store_id=store.id, name=name, sort_order=i))
         db.session.commit()
-
 
 
 def get_store_cart(store_id):
@@ -466,8 +544,93 @@ def get_store_cart(store_id):
     return items, subtotal
 
 
-
 def clear_store_cart(store_id):
     cart = session.get('cart', {})
     remaining = {k: v for k, v in cart.items() if v['store_id'] != store_id}
     session['cart'] = remaining
+
+
+def remember_recent_order(slug, order_id):
+    recent = session.get('recent_orders', {})
+    store_orders = recent.get(slug, [])
+    if order_id not in store_orders:
+        store_orders.insert(0, order_id)
+    recent[slug] = store_orders[:20]
+    session['recent_orders'] = recent
+
+
+def format_address(street, number, neighborhood, city, state, zipcode, complement='', reference=''):
+    parts = []
+    first_line = ', '.join([p for p in [street, number] if p])
+    if first_line:
+        parts.append(first_line)
+    second_line = ' - '.join([p for p in [neighborhood, city, state] if p])
+    if second_line:
+        parts.append(second_line)
+    if zipcode:
+        parts.append(f'CEP {zipcode}')
+    if complement:
+        parts.append(f'Compl.: {complement}')
+    if reference:
+        parts.append(f'Ref.: {reference}')
+    return ' | '.join(parts)
+
+
+def build_qr_base64(payload):
+    img = qrcode.make(payload)
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+
+def build_pix_payload(store, order):
+    pix_key = (store.pix_key or '').strip()
+    if not pix_key:
+        return ''
+    merchant_name = normalize_pix_text(store.pix_holder or store.name, 25)
+    merchant_city = normalize_pix_text(store.city or 'CIDADE', 15)
+    amount = f'{order.total:.2f}'
+    txid = f'PED{order.id}'[:25]
+
+    merchant_account = emv('00', 'br.gov.bcb.pix') + emv('01', pix_key)
+    additional = emv('05', txid)
+    payload = (
+        emv('00', '01') +
+        emv('01', '12') +
+        emv('26', merchant_account) +
+        emv('52', '0000') +
+        emv('53', '986') +
+        emv('54', amount) +
+        emv('58', 'BR') +
+        emv('59', merchant_name) +
+        emv('60', merchant_city) +
+        emv('62', additional) +
+        '6304'
+    )
+    return payload + crc16(payload)
+
+
+def normalize_pix_text(value, max_len):
+    value = (value or '').upper()
+    translated = ''.join(ch for ch in value if ch.isalnum() or ch == ' ')
+    translated = ' '.join(translated.split())
+    return translated[:max_len] or 'LOJA'
+
+
+def emv(identifier, value):
+    value = str(value)
+    return f'{identifier}{len(value):02d}{value}'
+
+
+def crc16(payload):
+    polynomial = 0x1021
+    result = 0xFFFF
+    for byte in payload.encode('utf-8'):
+        result ^= byte << 8
+        for _ in range(8):
+            if result & 0x8000:
+                result = (result << 1) ^ polynomial
+            else:
+                result <<= 1
+            result &= 0xFFFF
+    return f'{result:04X}'

@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% block title %}Carrinho - {{ store.name }}{% endblock %}
 {% block body %}
-<div class="storefront-page" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
-  <header class="storefront-header container-narrow">
+<div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+  <header class="storefront-header container-narrow glass-topbar">
     <a href="/{{ store.slug }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
     <div class="brand-mini">Seu carrinho</div>
-    <div></div>
+    <a href="{{ url_for('my_orders', slug=store.slug) }}" class="icon-circle"><i class="bi bi-receipt"></i></a>
   </header>
   <section class="container-narrow checkout-layout">
-    <div class="panel-card mobile-card">
+    <div class="panel-card mobile-card order-mobile-card">
       <h1>Revisão do pedido</h1>
       <form method="post" action="{{ url_for('update_cart', slug=store.slug) }}">
         <div class="cart-list">
           {% for item in items %}
-          <div class="cart-item">
+          <div class="cart-item app-card">
             <div class="menu-image small" style="background-image:url('{{ item.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
             <div class="cart-copy">
               <strong>{{ item.name }}</strong>
@@ -22,12 +22,12 @@
             <input type="number" min="0" name="qty_{{ item.key }}" value="{{ item.quantity }}">
           </div>
           {% else %}
-          <div class="muted">Seu carrinho está vazio.</div>
+          <div class="muted empty-soft">Seu carrinho está vazio.</div>
           {% endfor %}
         </div>
         <button class="btn btn-light full mt-12">Atualizar carrinho</button>
       </form>
-      <div class="totals-box">
+      <div class="totals-box sticky-summary">
         <div class="row between"><span>Subtotal</span><strong>R$ {{ '%.2f'|format(subtotal) }}</strong></div>
         <div class="row between"><span>Entrega</span><strong>R$ {{ '%.2f'|format(delivery_fee) }}</strong></div>
         <div class="row between total-line"><span>Total</span><strong>R$ {{ '%.2f'|format(total) }}</strong></div>

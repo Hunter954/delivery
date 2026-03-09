@@ -233,3 +233,54 @@ textarea { resize: vertical; }
   .menu-image { width: 100%; height: 160px; }
   .floating-cart { bottom: 12px; border-radius: 18px; }
 }
+
+
+body { -webkit-font-smoothing: antialiased; }
+.mobile-app-shell { padding-bottom: 170px; }
+.app-card { border: 1px solid rgba(17,24,39,.04); }
+.glass-topbar { position: sticky; top: 0; z-index: 40; background: rgba(244,245,247,.82); backdrop-filter: blur(12px); padding-top: max(16px, env(safe-area-inset-top)); }
+.mobile-hero .store-banner.large { height: 230px; border-radius: 0 0 28px 28px; }
+.search-store { margin-top: 16px; background: #f4f5f7; border-radius: 18px; padding: 0 14px; display: flex; align-items: center; gap: 10px; border: 1px solid #eceef2; }
+.search-store input { border: 0; background: transparent; padding-left: 0; }
+.category-chips { display: flex; gap: 10px; overflow-x: auto; padding-top: 14px; }
+.category-chips button { border: 0; white-space: nowrap; padding: 10px 14px; border-radius: 999px; font-weight: 700; background: #fff1f2; color: var(--store-primary, var(--primary)); }
+.bottom-app-nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(12px, env(safe-area-inset-bottom)); width: min(880px, calc(100% - 20px)); background: rgba(255,255,255,.94); backdrop-filter: blur(14px); border: 1px solid rgba(17,24,39,.06); box-shadow: 0 18px 42px rgba(16,24,40,.12); border-radius: 24px; display: grid; grid-template-columns: repeat(3,1fr); padding: 10px 6px; z-index: 50; }
+.bottom-app-nav a { position: relative; display: grid; place-items: center; gap: 5px; font-size: 12px; color: #6b7280; font-weight: 700; padding: 8px 6px; border-radius: 18px; }
+.bottom-app-nav a.active { background: #fff1f2; color: var(--store-primary, var(--primary)); }
+.bottom-app-nav a b { position: absolute; top: 2px; right: calc(50% - 22px); min-width: 18px; height: 18px; border-radius: 999px; background: var(--store-primary, var(--primary)); color: #fff; font-size: 11px; display: grid; place-items: center; padding: 0 4px; }
+.bottom-app-nav i { font-size: 18px; }
+.order-mobile-card, .order-detail-card, .order-feedback-card { width: min(520px, 100%); }
+.order-mobile-card { padding: 18px; display: grid; gap: 10px; }
+.status-chip { text-transform: capitalize; color: var(--store-primary, var(--primary)); background: #fff1f2; border-radius: 999px; padding: 8px 12px; font-weight: 800; }
+.empty-soft, .empty-soft-card { text-align: center; }
+.empty-soft-card { padding: 30px 22px; }
+.address-helper, .pix-tip-box { background: #fff7f8; }
+.checkout-form small { min-height: 18px; display: block; }
+.compact-grid { gap: 12px; }
+.pix-payment-box { border: 1px solid #eceef2; background: linear-gradient(180deg, #fff, #fcfcfd); padding: 18px; border-radius: 24px; margin: 18px 0; }
+.pix-qr { width: 220px; max-width: 100%; margin: 14px auto; display: block; border-radius: 18px; background: #fff; padding: 10px; box-shadow: 0 10px 30px rgba(16,24,40,.08); }
+.pix-code-area { min-height: 120px; font-size: 12px; line-height: 1.5; word-break: break-all; }
+.success-pill { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #dcfce7; color: #166534; font-weight: 800; margin-bottom: 10px; }
+.success-actions { display: grid; gap: 10px; }
+.animate-pop { animation: popIn .6s ease; }
+@keyframes popIn { 0% { transform: scale(.75); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+.order-status-summary { text-align: left; }
+.sticky-summary { position: sticky; bottom: 0; background: #fff; }
+
+@media (max-width: 640px) {
+  .container-narrow { width: calc(100% - 14px); }
+  .storefront-page { background: #f3f4f6; }
+  .storefront-header { padding-bottom: 12px; }
+  .mobile-hero .store-banner.large { height: 190px; border-radius: 0 0 24px 24px; }
+  .store-main-card { margin: -28px 8px 0; padding: 18px; border-radius: 22px; }
+  .store-logo { width: 68px; height: 68px; border-radius: 20px; }
+  .featured-scroll { grid-auto-columns: 86%; }
+  .menu-card, .cart-item { border-radius: 20px; }
+  .menu-card { flex-direction: row; align-items: center; }
+  .menu-side { display: grid; grid-template-columns: 88px auto; align-items: end; gap: 8px; }
+  .menu-image { width: 88px; height: 88px; border-radius: 16px; }
+  .mobile-card { width: 100%; padding: 18px; border-radius: 24px; }
+  .floating-cart { width: calc(100% - 18px); bottom: 88px; border-radius: 18px; padding: 14px 16px; }
+  .flash-stack { left: 10px; right: 10px; top: 10px; }
+  .flash { min-width: 0; }
+}

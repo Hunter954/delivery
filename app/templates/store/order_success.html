@@ -1,17 +1,39 @@
 {% extends 'base.html' %}
 {% block title %}Pedido confirmado{% endblock %}
 {% block body %}
-<div class="success-wrap storefront-page" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
-  <div class="panel-card success-card">
-    <div class="success-icon"><i class="bi bi-check2"></i></div>
-    <h1>Pedido confirmado!</h1>
-    <p>Seu pedido #{{ order.id }} foi enviado para {{ store.name }}.</p>
-    <div class="summary-box compact">
-      <div class="row between"><span>Status</span><strong>{{ order.status }}</strong></div>
+<div class="success-wrap storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+  <div class="panel-card success-card order-feedback-card">
+    <div class="success-icon animate-pop"><i class="bi bi-check2"></i></div>
+    <div class="success-pill">Pedido enviado com sucesso</div>
+    <h1>Seu pedido #{{ order.id }} já foi para a loja</h1>
+    <p>Agora é só acompanhar por aqui. Esse pedido não some mais da sua área de pedidos neste navegador.</p>
+
+    <div class="summary-box compact order-status-summary">
+      <div class="row between"><span>Status</span><strong class="status-chip">{{ order.status }}</strong></div>
       <div class="row between"><span>Total</span><strong>R$ {{ '%.2f'|format(order.total) }}</strong></div>
       <div class="row between"><span>Pagamento</span><strong>{{ order.payment_method|upper }}</strong></div>
     </div>
-    <a class="btn btn-primary full" href="/{{ store.slug }}">Voltar para a loja</a>
+
+    {% if pix_code and pix_qr_base64 %}
+    <div class="pix-payment-box">
+      <h2>Pague com Pix</h2>
+      <p>Escaneie o QR Code abaixo ou copie o código Pix.</p>
+      <img class="pix-qr" src="data:image/png;base64,{{ pix_qr_base64 }}" alt="QR Code Pix">
+      <textarea class="pix-code-area" readonly>{{ pix_code }}</textarea>
+      <button class="btn btn-light full" type="button" data-copy-text="{{ pix_code }}"><i class="bi bi-copy"></i> Copiar código Pix</button>
+    </div>
+    {% elif order.payment_method == 'pix' %}
+    <div class="helper-box">
+      <strong>Chave Pix</strong>
+      <p>{{ store.pix_key or 'Configure a chave Pix da loja no painel.' }}</p>
+    </div>
+    {% endif %}
+
+    <div class="success-actions">
+      <a class="btn btn-primary full" href="{{ url_for('my_orders', slug=store.slug) }}">Ir para meus pedidos</a>
+      <a class="btn btn-light full" href="{{ url_for('order_detail', slug=store.slug, order_id=order.id) }}">Ver detalhes do pedido</a>
+      <a class="btn btn-light full" href="/{{ store.slug }}">Continuar comprando</a>
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -1,72 +1,82 @@
 {% extends 'base.html' %}
 {% block title %}{{ store.name }}{% endblock %}
 {% block body %}
-<div class="storefront-page" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
-  <header class="storefront-header container-narrow">
+<div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+  <header class="storefront-header container-narrow glass-topbar">
     <a href="{{ url_for('home') }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
     <div class="brand-mini">{{ store.name }}</div>
     <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle cart-indicator"><i class="bi bi-bag"></i><span>{{ cart_count }}</span></a>
   </header>
 
-  <section class="hero-store container-narrow">
+  <section class="hero-store container-narrow mobile-hero">
     <div class="store-banner large" style="background-image:url('{{ store.banner_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop' }}')"></div>
-    <div class="store-card overlay-card store-main-card">
+    <div class="store-card overlay-card store-main-card app-card">
       <div class="row between start gap-16 wrap">
-        <div class="row gap-16">
+        <div class="row gap-16 start">
           <div class="store-logo" style="background-image:url('{{ store.logo_url or store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' }}')"></div>
           <div>
             <h1>{{ store.name }}</h1>
             <p class="muted">{{ store.description or 'Loja personalizada de delivery.' }}</p>
             <div class="quick-pills wrap">
-              <span>{{ store.estimated_time }}</span>
-              <span>R$ {{ '%.2f'|format(store.delivery_fee) }} entrega</span>
-              <span>{{ 'Aberta' if store.is_open else 'Fechada' }}</span>
+              <span><i class="bi bi-clock"></i> {{ store.estimated_time }}</span>
+              <span><i class="bi bi-scooter"></i> R$ {{ '%.2f'|format(store.delivery_fee) }}</span>
+              <span><i class="bi bi-circle-fill"></i> {{ 'Aberta' if store.is_open else 'Fechada' }}</span>
             </div>
           </div>
         </div>
         <div class="rating-box">★ 4.8</div>
       </div>
+      <form class="search-store" method="get">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query or '' }}" placeholder="Busque lanches, combos, bebidas...">
+      </form>
+      <div class="category-chips">
+        {% for category in categories %}
+          <button type="button" data-category-chip="#cat-{{ category.id }}">{{ category.name }}</button>
+        {% endfor %}
+      </div>
     </div>
   </section>
 
-  <section class="container-narrow section-store">
+  <section class="container-narrow section-store app-sections">
     {% if featured %}
-    <div class="section-head compact-head">
-      <div>
-        <span class="section-kicker">Mais pedidos</span>
-        <h2>Destaques da casa</h2>
-      </div>
-      <a class="store-action" href="{{ url_for('view_cart', slug=store.slug) }}">Ver carrinho</a>
-    </div>
-    <div class="featured-scroll">
-      {% for product in featured %}
-      <div class="featured-card">
-        <div class="featured-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=800&auto=format&fit=crop' }}')"></div>
-        <div class="featured-body">
-          <strong>{{ product.name }}</strong>
-          <p>{{ product.description or 'Produto em destaque da loja.' }}</p>
-          <div class="row between center">
-            <span>R$ {{ '%.2f'|format(product.price) }}</span>
-            <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}"><button class="btn btn-primary btn-sm">Adicionar</button></form>
-          </div>
+    <div>
+      <div class="section-head compact-head">
+        <div>
+          <span class="section-kicker">Escolhidos para você</span>
+          <h2>Destaques</h2>
         </div>
       </div>
-      {% endfor %}
+      <div class="featured-scroll">
+        {% for product in featured %}
+        <div class="featured-card">
+          <div class="featured-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=800&auto=format&fit=crop' }}')"></div>
+          <div class="featured-body">
+            <strong>{{ product.name }}</strong>
+            <p>{{ product.description or 'Produto em destaque da loja.' }}</p>
+            <div class="row between center">
+              <span>R$ {{ '%.2f'|format(product.price) }}</span>
+              <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}"><button class="btn btn-primary btn-sm">Adicionar</button></form>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
     {% endif %}
 
     {% for category in categories %}
       {% set products = grouped_products.get(category.id, []) %}
       {% if products %}
-      <div class="menu-section">
+      <div class="menu-section" id="cat-{{ category.id }}">
         <div class="section-head compact-head"><h2>{{ category.name }}</h2></div>
         <div class="menu-list">
           {% for product in products %}
-          <div class="menu-card">
+          <div class="menu-card app-card">
             <div class="menu-copy">
               <strong>{{ product.name }}</strong>
               <p>{{ product.description or 'Descrição do produto.' }}</p>
-              <div class="row gap-8 center">
+              <div class="row gap-8 center wrap">
                 <span class="price">R$ {{ '%.2f'|format(product.price) }}</span>
                 {% if product.compare_at_price %}<span class="compare-price">R$ {{ '%.2f'|format(product.compare_at_price) }}</span>{% endif %}
               </div>
@@ -84,6 +94,12 @@
       {% endif %}
     {% endfor %}
   </section>
+
+  <nav class="bottom-app-nav container-narrow">
+    <a class="active" href="/{{ store.slug }}"><i class="bi bi-house-door"></i><span>Início</span></a>
+    <a href="{{ url_for('my_orders', slug=store.slug) }}"><i class="bi bi-receipt"></i><span>Pedidos</span>{% if recent_orders_count %}<b>{{ recent_orders_count }}</b>{% endif %}</a>
+    <a href="{{ url_for('view_cart', slug=store.slug) }}"><i class="bi bi-bag"></i><span>Carrinho</span>{% if cart_count %}<b>{{ cart_count }}</b>{% endif %}</a>
+  </nav>
 
   <a class="floating-cart" href="{{ url_for('view_cart', slug=store.slug) }}">
     <span><i class="bi bi-bag"></i> Ver carrinho</span>

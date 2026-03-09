@@ -4,3 +4,4 @@ Flask-Login==0.6.3
 python-slugify==8.0.4
 psycopg[binary]==3.2.13
 gunicorn==23.0.0
+qrcode[pil]==7.4.2
