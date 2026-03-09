@@ -1,127 +1,138 @@
 {% extends 'base.html' %}
 {% block title %}{{ store.name }}{% endblock %}
 {% block body %}
-<div class="storefront-page mobile-app-shell store-v4" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
-  <header class="storefront-header container-narrow glass-topbar">
-    <a href="{{ url_for('home') }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
-    <div class="brand-mini">{{ store.name }}</div>
-    <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle cart-indicator"><i class="bi bi-bag"></i><span>{{ cart_count }}</span></a>
-  </header>
+<div class="storefront-page mobile-app-shell store-v6" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
+  <div class="app-mobile-frame">
+    <header class="storefront-header container-narrow glass-topbar">
+      <a href="{{ url_for('home') }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
+      <div class="brand-mini">{{ store.name }}</div>
+      <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle cart-indicator"><i class="bi bi-bag"></i><span>{{ cart_count }}</span></a>
+    </header>
 
-  <section class="hero-store container-narrow mobile-hero v4-hero">
-    <div class="store-banner large v4-banner" style="background-image:url('{{ store.banner_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop' }}')"></div>
-    <div class="store-logo-float" style="background-image:url('{{ store.logo_url or store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' }}')"></div>
-    <div class="store-card overlay-card store-main-card app-card v4-store-card">
-      <div class="store-card-top">
-        <div class="store-card-copy">
-          <h1>{{ store.name }}</h1>
-          <p class="muted v4-desc">{{ store.description or 'Deliciosos e autênticos hambúrgueres artesanais com a melhor carne.' }}</p>
+    <section class="hero-store container-narrow mobile-hero v6-hero">
+      <div class="store-banner large v6-banner" style="background-image:url('{{ store.banner_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop' }}')"></div>
+      <div class="store-logo-float v6-logo" style="background-image:url('{{ store.logo_url or store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' }}')"></div>
+
+      <div class="store-card overlay-card store-main-card app-card v6-store-card">
+        <div class="store-card-top v6-store-top">
+          <div class="store-card-copy v6-store-copy">
+            <h1>{{ store.name }}</h1>
+            <p class="muted v6-desc">{{ store.description or 'Deliciosos e autênticos hambúrgueres artesanais com a melhor carne.' }}</p>
+          </div>
+          <div class="rating-box rating-chip v6-rating"><i class="bi bi-star-fill"></i> 4.8</div>
         </div>
-        <div class="rating-box rating-chip"><i class="bi bi-star-fill"></i> 4.8</div>
-      </div>
-      <div class="v4-meta-row">
-        <span><i class="bi bi-clock"></i> {{ store.estimated_time }}</span>
-        <span><i class="bi bi-scooter"></i> R$ {{ '%.2f'|format(store.delivery_fee) }}</span>
-        <span class="badge-open is-{{ 'open' if store.is_open else 'closed' }}"><i class="bi bi-circle-fill"></i> {{ 'Aberta' if store.is_open else 'Fechada' }}</span>
-        <button class="icon-circle soft-action" type="button"><i class="bi bi-heart"></i></button>
-        <button class="icon-circle soft-action" type="button"><i class="bi bi-share"></i></button>
-      </div>
-      <form class="search-store v4-search" method="get">
-        <i class="bi bi-search"></i>
-        <input type="text" name="q" value="{{ query or '' }}" placeholder="Busque lanches, combos, bebidas...">
-      </form>
-      <div class="category-chips nav-dots v4-category-chips no-scrollbar">
-        {% if featured %}<button type="button" data-category-chip="#featured-section">Destaques</button>{% endif %}
-        {% for category in categories %}
-          <button type="button" data-category-chip="#cat-{{ category.id }}">{{ category.name }}</button>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
 
-  <section class="container-narrow section-store app-sections">
-    {% if featured %}
-    <div class="menu-section featured-section-v4" id="featured-section">
-      <div class="section-head compact-head v4-head intro-spacing">
-        <div>
-          <span class="section-kicker">Escolhidos para você</span>
-          <h2>Destaques</h2>
+        <div class="v6-meta-row">
+          <span class="meta-pill"><i class="bi bi-clock-history"></i> {{ store.estimated_time }}</span>
+          <span class="meta-pill"><i class="bi bi-bicycle"></i> R$ {{ '%.2f'|format(store.delivery_fee) }}</span>
+          <span class="meta-pill badge-open is-{{ 'open' if store.is_open else 'closed' }}"><i class="bi bi-circle-fill"></i> {{ 'Aberta' if store.is_open else 'Fechada' }}</span>
+          <button class="icon-circle soft-action" type="button" aria-label="Favoritar"><i class="bi bi-heart"></i></button>
+          <button class="icon-circle soft-action" type="button" aria-label="Compartilhar"><i class="bi bi-share"></i></button>
         </div>
       </div>
-      <div class="featured-list-v4">
-        {% for product in featured %}
-        <div class="featured-card v4-featured-card app-card">
-          <div class="featured-image left-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=800&auto=format&fit=crop' }}')"></div>
-          <div class="featured-body v4-featured-body">
-            <div class="featured-copy">
-              <div class="product-head-row align-start-row">
-                <div class="title-group">
-                  <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
+
+      <div class="v6-discovery-card app-card">
+        <form class="search-store v6-search" method="get">
+          <i class="bi bi-search"></i>
+          <input type="text" name="q" value="{{ query or '' }}" placeholder="Busque lanches, combos, bebidas...">
+        </form>
+        <div class="category-chips v6-category-chips" role="navigation" aria-label="Categorias da loja">
+          {% if featured %}<button type="button" data-category-chip="#featured-section">Destaques</button>{% endif %}
+          {% for category in categories %}
+            <button type="button" data-category-chip="#cat-{{ category.id }}">{{ category.name }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="container-narrow section-store app-sections v6-sections">
+      {% if featured %}
+      <div class="menu-section featured-section-v6" id="featured-section">
+        <div class="section-head compact-head v6-head">
+          <div>
+            <span class="section-kicker">Escolhidos para você</span>
+            <h2>Destaques</h2>
+          </div>
+        </div>
+
+        <div class="featured-list-v6">
+          {% for product in featured %}
+          <div class="featured-card v6-featured-card app-card">
+            <div class="featured-image left-image v6-featured-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=800&auto=format&fit=crop' }}')"></div>
+            <div class="featured-body v6-featured-body">
+              <div class="product-head-row v6-product-head">
+                <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
+                <div class="menu-title-price-row">
                   <strong>{{ product.name }}</strong>
+                  <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
                 </div>
-                <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
               </div>
               <p class="desc-clamp-3">{{ product.description or 'Produto em destaque da loja.' }}</p>
-            </div>
-            <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="product-inline-actions product-inline-actions-hero">
-              <div class="qty-inline qty-pill">
-                <button class="qty-btn light" type="button" data-qty-minus><i class="bi bi-dash-lg"></i></button>
-                <span class="qty-value" data-qty-value>1</span>
-                <button class="qty-btn light" type="button" data-qty-plus><i class="bi bi-plus-lg"></i></button>
-              </div>
-              <input type="hidden" name="quantity" value="1" data-qty-input>
-              <button class="btn btn-primary btn-sm add-btn-red">Adicionar</button>
-            </form>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
 
-    {% for category in categories %}
-      {% set products = grouped_products.get(category.id, []) %}
-      {% if products %}
-      <div class="menu-section" id="cat-{{ category.id }}">
-        <div class="section-head compact-head v4-head">
-          <div>
-            <span class="section-kicker">Categoria</span>
-            <h2>{{ category.name }}</h2>
-          </div>
-        </div>
-        <div class="menu-list v4-menu-list">
-          {% for product in products %}
-          <div class="menu-card app-card menu-card-v4">
-            <div class="menu-image-left" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
-            <div class="menu-copy-tight">
-              <div class="product-head-row card-head-row">
-                <strong>{{ product.name }}</strong>
-                <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
-              </div>
-              <p class="desc-clamp-3">{{ product.description or 'Descrição do produto.' }}</p>
-              <div class="menu-actions-line">
-                <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
-                <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="qty-inline compact end-form qty-inline-card">
-                  <button class="qty-btn light" type="button" data-qty-minus><i class="bi bi-dash-lg"></i></button>
+              <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="product-inline-actions product-inline-actions-hero v6-actions-row">
+                <div class="qty-inline qty-pill v6-stepper">
+                  <button class="qty-btn light" type="button" data-qty-minus aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
                   <span class="qty-value" data-qty-value>1</span>
-                  <input type="hidden" name="quantity" value="1" data-qty-input>
-                  <button class="qty-btn light" type="button" data-qty-plus><i class="bi bi-plus-lg"></i></button>
-                  <button class="qty-btn primary add-square" type="submit"><i class="bi bi-plus-lg"></i></button>
-                </form>
-              </div>
+                  <button class="qty-btn light" type="button" data-qty-plus aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+                </div>
+                <input type="hidden" name="quantity" value="1" data-qty-input>
+                <button class="btn btn-primary btn-sm add-btn-red v6-add-btn" type="submit">Adicionar</button>
+              </form>
             </div>
           </div>
           {% endfor %}
         </div>
       </div>
       {% endif %}
-    {% endfor %}
-  </section>
 
-  <nav class="bottom-app-nav container-narrow">
-    <a class="active" href="/{{ store.slug }}"><i class="bi bi-house-door"></i><span>Início</span></a>
-    <a href="{{ url_for('my_orders', slug=store.slug) }}" data-orders-link data-store-slug="{{ store.slug }}"><i class="bi bi-receipt"></i><span>Pedidos</span>{% if recent_orders_count %}<b>{{ recent_orders_count }}</b>{% endif %}</a>
-    <a class="nav-cart-fab" href="{{ url_for('view_cart', slug=store.slug) }}"><i class="bi bi-bag"></i><span>Carrinho</span>{% if cart_count %}<b>{{ cart_count }}</b>{% endif %}</a>
-  </nav>
+      {% for category in categories %}
+        {% set products = grouped_products.get(category.id, []) %}
+        {% if products %}
+        <div class="menu-section" id="cat-{{ category.id }}">
+          <div class="section-head compact-head v6-head">
+            <div>
+              <span class="section-kicker">Categoria</span>
+              <h2>{{ category.name }}</h2>
+            </div>
+          </div>
+
+          <div class="menu-list v6-menu-list">
+            {% for product in products %}
+            <article class="menu-card app-card menu-card-v6">
+              <div class="menu-image-left v6-menu-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
+
+              <div class="menu-copy-tight v6-menu-copy">
+                <div class="menu-title-price-row">
+                  <strong>{{ product.name }}</strong>
+                  <span class="price-top green">R$ {{ '%.2f'|format(product.price) }}</span>
+                </div>
+
+                <p class="desc-clamp-3">{{ product.description or 'Descrição do produto.' }}</p>
+
+                <div class="menu-actions-line v6-menu-actions-line">
+                  <div class="rating-chip tiny"><i class="bi bi-star-fill"></i> 4.8</div>
+                  <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="qty-inline compact end-form qty-inline-card v6-card-form">
+                    <button class="qty-btn light" type="button" data-qty-minus aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
+                    <span class="qty-value" data-qty-value>1</span>
+                    <input type="hidden" name="quantity" value="1" data-qty-input>
+                    <button class="qty-btn light" type="button" data-qty-plus aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+                    <button class="btn btn-primary btn-sm add-btn-red v6-add-btn v6-add-btn-small" type="submit">Adicionar</button>
+                  </form>
+                </div>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </section>
+
+    <nav class="bottom-app-nav container-narrow v6-bottom-nav">
+      <a class="active" href="/{{ store.slug }}"><i class="bi bi-house-door"></i><span>Início</span></a>
+      <a href="{{ url_for('my_orders', slug=store.slug) }}" data-orders-link data-store-slug="{{ store.slug }}"><i class="bi bi-receipt"></i><span>Pedidos</span>{% if recent_orders_count %}<b>{{ recent_orders_count }}</b>{% endif %}</a>
+      <a href="{{ url_for('view_cart', slug=store.slug) }}"><i class="bi bi-bag"></i><span>Carrinho</span>{% if cart_count %}<b>{{ cart_count }}</b>{% endif %}</a>
+    </nav>
+  </div>
 </div>
 {% endblock %}
