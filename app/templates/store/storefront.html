@@ -29,8 +29,6 @@
             <span class="v7-meta-pill"><i class="bi bi-clock-history"></i> {{ store.estimated_time }}</span>
             <span class="v7-meta-pill"><i class="bi bi-bicycle"></i> R$ {{ '%.2f'|format(store.delivery_fee) }}</span>
             <span class="v7-meta-pill badge-open is-{{ 'open' if store.is_open else 'closed' }}"><i class="bi bi-circle-fill"></i> {{ 'Aberta' if store.is_open else 'Fechada' }}</span>
-            <button class="icon-circle v7-soft-action" type="button" aria-label="Favoritar"><i class="bi bi-heart"></i></button>
-            <button class="icon-circle v7-soft-action" type="button" aria-label="Compartilhar"><i class="bi bi-share"></i></button>
           </div>
         </div>
 
@@ -103,7 +101,6 @@
                   </div>
                   <p class="desc-clamp-3">{{ product.description or 'Descrição do produto.' }}</p>
                   <div class="v7-menu-actions-line">
-                    <span class="v7-rating-small"><i class="bi bi-star-fill"></i> 4.8</span>
                     <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="v7-card-form">
                       <div class="v7-stepper v7-stepper-small">
                         <button class="qty-btn" type="button" data-qty-minus aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
