@@ -3,15 +3,15 @@
 {% block body %}
 <div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
   <header class="storefront-header container-narrow glass-topbar">
-    <a href="{{ url_for('my_orders', slug=store.slug, t=order_token) }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
+    <a href="{{ url_for('my_orders', slug=store.slug) }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
     <div class="brand-mini">Pedido #{{ order.id }}</div>
-    <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle cart-indicator"><i class="bi bi-bag"></i><span>{{ cart_count }}</span></a>
+    <a href="{{ url_for('view_cart', slug=store.slug) }}" class="icon-circle"><i class="bi bi-bag"></i></a>
   </header>
   <section class="container-narrow section-store">
-    <div class="panel-card order-detail-card">
+    <div class="panel-card mobile-card order-detail-card">
+      <div class="row between center"><h1>Detalhes</h1><span class="status-chip">{{ order.status }}</span></div>
       <div class="summary-box compact">
-        <div class="row between"><span>Status</span><strong class="status-chip">{{ order.status }}</strong></div>
-        <div class="row between"><span>Criado em</span><strong>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</strong></div>
+        <div class="row between"><span>Data</span><strong>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</strong></div>
         <div class="row between"><span>Pagamento</span><strong>{{ order.payment_method|upper }}</strong></div>
         <div class="row between"><span>Entrega</span><strong>{{ order.fulfillment_type == 'pickup' and 'Retirada' or 'Delivery' }}</strong></div>
         <div class="row between"><span>Total</span><strong>R$ {{ '%.2f'|format(order.total) }}</strong></div>
@@ -28,7 +28,7 @@
         <p class="muted">{{ order.customer_address or 'Retirada no local' }}</p>
         {% if order.customer_notes %}<p class="muted">Obs: {{ order.customer_notes }}</p>{% endif %}
       </div>
-      <a class="btn btn-primary full" href="{{ url_for('my_orders', slug=store.slug, t=order_token) }}" data-orders-link data-store-slug="{{ store.slug }}">Voltar para meus pedidos</a>
+      <a class="btn btn-primary full" href="{{ url_for('my_orders', slug=store.slug) }}">Voltar para meus pedidos</a>
     </div>
   </section>
 </div>

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Meus pedidos - {{ store.name }}{% endblock %}
 {% block body %}
-<div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};" data-orders-page data-store-slug="{{ store.slug }}">
+<div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color }}; --store-secondary: {{ store.secondary_color }}; --store-accent: {{ store.accent_color }};">
   <header class="storefront-header container-narrow glass-topbar">
     <a href="/{{ store.slug }}" class="icon-circle"><i class="bi bi-arrow-left"></i></a>
     <div class="brand-mini">Meus pedidos</div>
@@ -10,7 +10,7 @@
   <section class="container-narrow section-store">
     {% if orders %}
       {% for order in orders %}
-      <a class="panel-card order-card-mobile" href="{{ url_for('order_detail', slug=store.slug, order_id=order.id, t=order_tokens.get(order.id)) }}">
+      <a class="panel-card order-card-mobile" href="{{ url_for('order_detail', slug=store.slug, order_id=order.id) }}">
         <div class="row between center">
           <strong>Pedido #{{ order.id }}</strong>
           <span class="status-chip">{{ order.status }}</span>
@@ -29,7 +29,7 @@
   </section>
   <nav class="bottom-app-nav container-narrow">
     <a href="/{{ store.slug }}"><i class="bi bi-house-door"></i><span>Início</span></a>
-    <a class="active" href="{{ url_for('my_orders', slug=store.slug) }}" data-orders-link data-store-slug="{{ store.slug }}"><i class="bi bi-receipt"></i><span>Pedidos</span>{% if recent_orders_count %}<b>{{ recent_orders_count }}</b>{% endif %}</a>
+    <a class="active" href="{{ url_for('my_orders', slug=store.slug) }}"><i class="bi bi-receipt"></i><span>Pedidos</span>{% if recent_orders_count %}<b>{{ recent_orders_count }}</b>{% endif %}</a>
     <a href="{{ url_for('view_cart', slug=store.slug) }}"><i class="bi bi-bag"></i><span>Carrinho</span>{% if cart_count %}<b>{{ cart_count }}</b>{% endif %}</a>
   </nav>
 </div>
