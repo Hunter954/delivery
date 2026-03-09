@@ -361,7 +361,23 @@ def register_routes(app):
                 continue
             grouped_products[product.category_id].append(product)
         featured = Product.query.filter_by(store_id=store.id, is_active=True, is_featured=True).limit(8).all()
-        return render_template('store/storefront.html', store=store, categories=categories, grouped_products=grouped_products, featured=featured, query=q)
+
+        cart = session.get('cart', {})
+        cart_quantities = {}
+        for item in cart.values():
+            if item.get('store_id') != store.id:
+                continue
+            cart_quantities[item.get('product_id')] = item.get('quantity', 0)
+
+        return render_template(
+            'store/storefront.html',
+            store=store,
+            categories=categories,
+            grouped_products=grouped_products,
+            featured=featured,
+            query=q,
+            cart_quantities=cart_quantities,
+        )
 
     @app.route('/<slug>/cart/add/<int:product_id>', methods=['POST'])
     def add_to_cart(slug, product_id):
@@ -406,6 +422,32 @@ def register_routes(app):
         session['cart'] = cart
         flash('Carrinho atualizado.', 'info')
         return redirect(url_for('view_cart', slug=slug))
+
+    @app.route('/<slug>/cart/change/<int:product_id>', methods=['POST'])
+    def change_cart_quantity(slug, product_id):
+        store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
+        product = Product.query.filter_by(id=product_id, store_id=store.id, is_active=True).first_or_404()
+        delta = int(request.form.get('delta', 0) or 0)
+        cart = session.get('cart', {})
+        key = f'{store.id}:{product.id}'
+
+        if key not in cart and delta > 0:
+            cart[key] = {
+                'store_id': store.id,
+                'product_id': product.id,
+                'name': product.name,
+                'price': product.price,
+                'image_url': product.image_url,
+                'quantity': 0,
+            }
+
+        if key in cart:
+            cart[key]['quantity'] = max(0, cart[key].get('quantity', 0) + delta)
+            if cart[key]['quantity'] <= 0:
+                cart.pop(key, None)
+
+        session['cart'] = cart
+        return redirect(request.referrer or url_for('public_store', slug=slug))
 
     @app.route('/<slug>/checkout', methods=['GET', 'POST'])
     def checkout(slug):

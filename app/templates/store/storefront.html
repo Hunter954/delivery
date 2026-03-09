@@ -11,26 +11,28 @@
   <section class="hero-store container-narrow mobile-hero">
     <div class="store-banner large" style="background-image:url('{{ store.banner_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop' }}')"></div>
     <div class="store-card overlay-card store-main-card app-card">
-      <div class="row between start gap-16 wrap">
-        <div class="row gap-16 start">
-          <div class="store-logo" style="background-image:url('{{ store.logo_url or store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' }}')"></div>
-          <div>
-            <h1>{{ store.name }}</h1>
-            <p class="muted">{{ store.description or 'Loja personalizada de delivery.' }}</p>
-            <div class="quick-pills wrap">
+      <div class="store-main-top">
+        <div class="store-main-left">
+          <div class="store-logo logo-round" style="background-image:url('{{ store.logo_url or store.banner_url or 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' }}')"></div>
+          <div class="store-main-copy">
+            <div class="store-title-row">
+              <h1>{{ store.name }}</h1>
+              <div class="rating-box"><i class="bi bi-star-fill"></i> 4.8</div>
+            </div>
+            <p class="muted store-description">{{ store.description or 'Loja personalizada de delivery.' }}</p>
+            <div class="store-meta-pills wrap">
               <span><i class="bi bi-clock"></i> {{ store.estimated_time }}</span>
               <span><i class="bi bi-scooter"></i> R$ {{ '%.2f'|format(store.delivery_fee) }}</span>
-              <span><i class="bi bi-circle-fill"></i> {{ 'Aberta' if store.is_open else 'Fechada' }}</span>
+              <span class="badge-open {{ 'is-open' if store.is_open else 'is-closed' }}"><i class="bi bi-circle-fill"></i> {{ 'Aberta' if store.is_open else 'Fechada' }}</span>
             </div>
           </div>
         </div>
-        <div class="rating-box">★ 4.8</div>
       </div>
       <form class="search-store" method="get">
         <i class="bi bi-search"></i>
         <input type="text" name="q" value="{{ query or '' }}" placeholder="Busque lanches, combos, bebidas...">
       </form>
-      <div class="category-chips">
+      <div class="category-chips nav-dots">
         {% for category in categories %}
           <button type="button" data-category-chip="#cat-{{ category.id }}">{{ category.name }}</button>
         {% endfor %}
@@ -49,14 +51,27 @@
       </div>
       <div class="featured-scroll">
         {% for product in featured %}
-        <div class="featured-card">
+        {% set qty = cart_quantities.get(product.id, 0) %}
+        <div class="featured-card compact-product-card">
           <div class="featured-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=800&auto=format&fit=crop' }}')"></div>
           <div class="featured-body">
-            <strong>{{ product.name }}</strong>
-            <p>{{ product.description or 'Produto em destaque da loja.' }}</p>
-            <div class="row between center">
-              <span>R$ {{ '%.2f'|format(product.price) }}</span>
-              <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}"><button class="btn btn-primary btn-sm">Adicionar</button></form>
+            <div class="product-head-row">
+              <strong>{{ product.name }}</strong>
+              <span class="price price-top">R$ {{ '%.2f'|format(product.price) }}</span>
+            </div>
+            <p class="desc-clamp-3">{{ product.description or 'Produto em destaque da loja.' }}</p>
+            <div class="product-actions-row">
+              <div class="qty-inline">
+                <form method="post" action="{{ url_for('change_cart_quantity', slug=store.slug, product_id=product.id) }}">
+                  <input type="hidden" name="delta" value="-1">
+                  <button class="qty-btn light" {% if qty <= 0 %}disabled{% endif %}><i class="bi bi-dash-lg"></i></button>
+                </form>
+                <span class="qty-value">{{ qty }}</span>
+                <form method="post" action="{{ url_for('change_cart_quantity', slug=store.slug, product_id=product.id) }}">
+                  <input type="hidden" name="delta" value="1">
+                  <button class="qty-btn primary"><i class="bi bi-plus-lg"></i></button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -72,20 +87,30 @@
         <div class="section-head compact-head"><h2>{{ category.name }}</h2></div>
         <div class="menu-list">
           {% for product in products %}
-          <div class="menu-card app-card">
-            <div class="menu-copy">
-              <strong>{{ product.name }}</strong>
-              <p>{{ product.description or 'Descrição do produto.' }}</p>
-              <div class="row gap-8 center wrap">
-                <span class="price">R$ {{ '%.2f'|format(product.price) }}</span>
-                {% if product.compare_at_price %}<span class="compare-price">R$ {{ '%.2f'|format(product.compare_at_price) }}</span>{% endif %}
-              </div>
+          {% set qty = cart_quantities.get(product.id, 0) %}
+          <div class="menu-card app-card menu-card-horizontal">
+            <div class="menu-thumb-wrap">
+              <div class="menu-image menu-image-left" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
             </div>
-            <div class="menu-side">
-              <div class="menu-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
-              <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}">
-                <button class="icon-btn primary"><i class="bi bi-plus-lg"></i></button>
-              </form>
+            <div class="menu-copy menu-copy-tight">
+              <div class="product-head-row">
+                <strong>{{ product.name }}</strong>
+                <span class="price price-top">R$ {{ '%.2f'|format(product.price) }}</span>
+              </div>
+              <p class="desc-clamp-3">{{ product.description or 'Descrição do produto.' }}</p>
+            </div>
+            <div class="menu-side-inline">
+              <div class="qty-inline compact">
+                <form method="post" action="{{ url_for('change_cart_quantity', slug=store.slug, product_id=product.id) }}">
+                  <input type="hidden" name="delta" value="-1">
+                  <button class="qty-btn light" {% if qty <= 0 %}disabled{% endif %}><i class="bi bi-dash-lg"></i></button>
+                </form>
+                <span class="qty-value">{{ qty }}</span>
+                <form method="post" action="{{ url_for('change_cart_quantity', slug=store.slug, product_id=product.id) }}">
+                  <input type="hidden" name="delta" value="1">
+                  <button class="qty-btn primary"><i class="bi bi-plus-lg"></i></button>
+                </form>
+              </div>
             </div>
           </div>
           {% endfor %}
@@ -98,12 +123,7 @@
   <nav class="bottom-app-nav container-narrow">
     <a class="active" href="/{{ store.slug }}"><i class="bi bi-house-door"></i><span>Início</span></a>
     <a href="{{ url_for('my_orders', slug=store.slug) }}"><i class="bi bi-receipt"></i><span>Pedidos</span>{% if recent_orders_count %}<b>{{ recent_orders_count }}</b>{% endif %}</a>
-    <a href="{{ url_for('view_cart', slug=store.slug) }}"><i class="bi bi-bag"></i><span>Carrinho</span>{% if cart_count %}<b>{{ cart_count }}</b>{% endif %}</a>
+    <a href="{{ url_for('view_cart', slug=store.slug) }}" class="nav-cart-fab"><i class="bi bi-bag"></i><span>Carrinho</span>{% if cart_count %}<b>{{ cart_count }}</b>{% endif %}</a>
   </nav>
-
-  <a class="floating-cart" href="{{ url_for('view_cart', slug=store.slug) }}">
-    <span><i class="bi bi-bag"></i> Ver carrinho</span>
-    <strong>{{ cart_count }}</strong>
-  </a>
 </div>
 {% endblock %}
