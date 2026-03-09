@@ -28,7 +28,7 @@
 
     {% if categories %}
     <section class="store-category-bar app-card">
-      <div class="category-pill-list">
+      <div class="category-pill-list category-pill-list-nowrap">
         {% for category in categories %}
           <button type="button" class="category-pill" data-category-chip="#cat-{{ category.id }}">{{ category.name }}</button>
         {% endfor %}
@@ -36,35 +36,28 @@
     </section>
     {% endif %}
 
-    <main class="store-content-stack">
+    <main class="store-content-stack store-content-stack-compact">
       {% if featured %}
       <section class="content-section">
-        <div class="section-heading">
-          <span class="section-kicker">Escolhidos para você</span>
-          <h2>Destaques</h2>
+        <div class="section-heading section-heading-inline">
+          <div>
+            <span class="section-kicker">Escolhidos para você</span>
+            <h2>Destaques</h2>
+          </div>
         </div>
-        <div class="featured-list">
+        <div class="featured-list featured-list-compact">
           {% for product in featured %}
-          <article class="featured-product-card app-card">
-            <div class="featured-product-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=1000&auto=format&fit=crop' }}')"></div>
-            <div class="featured-product-body">
-              <div class="featured-rating"><i class="bi bi-star-fill"></i> 4.8</div>
-              <div class="product-head-row">
+          <a href="{{ url_for('product_detail', slug=store.slug, product_id=product.id) }}" class="featured-product-card featured-product-card-compact app-card product-card-link">
+            <div class="featured-product-image featured-product-image-compact" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1551782450-17144efb9c50?q=80&w=1000&auto=format&fit=crop' }}')"></div>
+            <div class="featured-product-body featured-product-body-compact">
+              <div class="product-head-row product-head-row-compact">
                 <h3>{{ product.name }}</h3>
                 <div class="product-price">R$ {{ '%.2f'|format(product.price) }}</div>
               </div>
-              <p class="product-description clamp-3">{{ product.description or 'Produto em destaque da loja.' }}</p>
-              <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="product-action-row" data-qty-form>
-                <div class="qty-stepper" data-qty-stepper>
-                  <button type="button" class="qty-btn" data-qty-action="minus" aria-label="Diminuir"><i class="bi bi-dash"></i></button>
-                  <input type="text" value="1" readonly class="qty-value" data-qty-display>
-                  <button type="button" class="qty-btn" data-qty-action="plus" aria-label="Aumentar"><i class="bi bi-plus"></i></button>
-                  <input type="hidden" name="quantity" value="1" data-qty-input>
-                </div>
-                <button class="add-btn" type="submit">Adicionar</button>
-              </form>
+              <p class="product-description clamp-2">{{ product.description or 'Produto em destaque da loja.' }}</p>
+              <span class="product-card-hint">Toque para escolher complementos</span>
             </div>
-          </article>
+          </a>
           {% endfor %}
         </div>
       </section>
@@ -74,31 +67,32 @@
         {% set products = grouped_products.get(category.id, []) %}
         {% if products %}
         <section class="content-section" id="cat-{{ category.id }}">
-          <div class="section-heading section-heading-compact">
-            <span class="section-kicker">Categoria</span>
-            <h2>{{ category.name }}</h2>
+          <div class="section-heading section-heading-compact section-heading-inline">
+            <div>
+              <span class="section-kicker">Categoria</span>
+              <h2>{{ category.name }}</h2>
+            </div>
           </div>
-          <div class="product-list-grid">
+          <div class="product-list-grid product-list-grid-compact">
             {% for product in products %}
-            <article class="product-row-card app-card">
-              <div class="product-thumb" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
-              <div class="product-row-main">
-                <div class="product-head-row">
+            <a href="{{ url_for('product_detail', slug=store.slug, product_id=product.id) }}" class="product-row-card product-row-card-compact app-card product-card-link">
+              <div class="product-row-main product-row-main-compact">
+                <div class="product-head-row product-head-row-compact">
                   <h3>{{ product.name }}</h3>
-                  <div class="product-price">R$ {{ '%.2f'|format(product.price) }}</div>
                 </div>
-                <p class="product-description clamp-3">{{ product.description or 'Descrição do produto.' }}</p>
-                <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="product-action-row" data-qty-form>
-                  <div class="qty-stepper" data-qty-stepper>
-                    <button type="button" class="qty-btn" data-qty-action="minus" aria-label="Diminuir"><i class="bi bi-dash"></i></button>
-                    <input type="text" value="1" readonly class="qty-value" data-qty-display>
-                    <button type="button" class="qty-btn" data-qty-action="plus" aria-label="Aumentar"><i class="bi bi-plus"></i></button>
-                    <input type="hidden" name="quantity" value="1" data-qty-input>
+                <p class="product-description clamp-2">{{ product.description or 'Descrição do produto.' }}</p>
+                <div class="product-row-footer">
+                  <div class="product-price-wrap">
+                    <div class="product-price">R$ {{ '%.2f'|format(product.price) }}</div>
+                    {% if product.compare_at_price and product.compare_at_price > product.price %}
+                      <div class="product-compare">R$ {{ '%.2f'|format(product.compare_at_price) }}</div>
+                    {% endif %}
                   </div>
-                  <button class="add-btn" type="submit">Adicionar</button>
-                </form>
+                  <span class="product-card-action"><i class="bi bi-chevron-right"></i></span>
+                </div>
               </div>
-            </article>
+              <div class="product-thumb product-thumb-compact" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop' }}')"></div>
+            </a>
             {% endfor %}
           </div>
         </section>

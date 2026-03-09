@@ -363,6 +363,44 @@ def register_routes(app):
         featured = Product.query.filter_by(store_id=store.id, is_active=True, is_featured=True).limit(8).all()
         return render_template('store/storefront.html', store=store, categories=categories, grouped_products=grouped_products, featured=featured, query=q)
 
+    @app.route('/<slug>/produto/<int:product_id>')
+    def product_detail(slug, product_id):
+        store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
+        product = Product.query.filter_by(id=product_id, store_id=store.id, is_active=True).first_or_404()
+        suggested_drinks = Product.query.filter(
+            Product.store_id == store.id,
+            Product.is_active.is_(True),
+            Product.id != product.id,
+            db.or_(
+                Product.name.ilike('%coca%'),
+                Product.name.ilike('%refrigerante%'),
+                Product.name.ilike('%suco%'),
+                Product.name.ilike('%água%'),
+                Product.name.ilike('%agua%'),
+                Product.name.ilike('%guaraná%'),
+                Product.name.ilike('%guarana%')
+            )
+        ).order_by(Product.is_featured.desc(), Product.created_at.desc()).limit(6).all()
+        if not suggested_drinks:
+            suggested_drinks = Product.query.filter(
+                Product.store_id == store.id,
+                Product.is_active.is_(True),
+                Product.id != product.id
+            ).order_by(Product.is_featured.desc(), Product.created_at.desc()).limit(6).all()
+
+        more_items = Product.query.filter(
+            Product.store_id == store.id,
+            Product.is_active.is_(True),
+            Product.id != product.id
+        ).order_by(Product.is_featured.desc(), Product.created_at.desc()).limit(8).all()
+        return render_template(
+            'store/product_detail.html',
+            store=store,
+            product=product,
+            suggested_drinks=suggested_drinks,
+            more_items=more_items,
+        )
+
     @app.route('/<slug>/cart/add/<int:product_id>', methods=['POST'])
     def add_to_cart(slug, product_id):
         store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
