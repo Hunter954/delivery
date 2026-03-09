@@ -306,6 +306,28 @@ def register_routes(app):
         items = Product.query.filter_by(store_id=store.id).order_by(Product.created_at.desc()).all()
         return render_template('platform/products.html', store=store, products=items, categories=categories)
 
+    @app.route('/dashboard/products/<int:product_id>/edit', methods=['POST'])
+    @login_required
+    def edit_product(product_id):
+        store = require_store_setup()
+        if not isinstance(store, Store):
+            return store
+        product = Product.query.filter_by(id=product_id, store_id=store.id).first_or_404()
+        product.category_id = int(request.form.get('category_id') or product.category_id)
+        product.name = request.form.get('name', '').strip()
+        product.description = request.form.get('description', '').strip()
+        product.image_url = request.form.get('image_url', '').strip()
+        product.price = float(request.form.get('price') or 0)
+        product.compare_at_price = float(request.form.get('compare_at_price') or 0) or None
+        product.is_featured = request.form.get('is_featured') == 'on'
+        product.is_active = request.form.get('is_active') == 'on'
+        if not product.name:
+            flash('Informe o nome do produto.', 'danger')
+            return redirect(url_for('products'))
+        db.session.commit()
+        flash('Produto atualizado com sucesso.', 'success')
+        return redirect(url_for('products'))
+
     @app.route('/dashboard/products/<int:product_id>/toggle')
     @login_required
     def toggle_product(product_id):
@@ -406,20 +428,39 @@ def register_routes(app):
         store = Store.query.filter_by(slug=slug, is_active=True).first_or_404()
         product = Product.query.filter_by(id=product_id, store_id=store.id, is_active=True).first_or_404()
         cart = session.get('cart', {})
-        key = f'{store.id}:{product.id}'
+
+        quantity = max(1, int(request.form.get('quantity', 1) or 1))
+        notes = request.form.get('notes', '').strip()
+        addon_ids = [int(v) for v in request.form.getlist('addon_ids') if str(v).isdigit()]
+        addon_products = []
+        addon_total = 0
+        if addon_ids:
+            addon_products = Product.query.filter(
+                Product.store_id == store.id,
+                Product.is_active.is_(True),
+                Product.id.in_(addon_ids)
+            ).all()
+            addon_total = sum(item.price for item in addon_products)
+
+        addon_key = '-'.join(str(item.id) for item in addon_products)
+        key = f'{store.id}:{product.id}:{notes}:{addon_key}'
         if key not in cart:
             cart[key] = {
                 'store_id': store.id,
                 'product_id': product.id,
                 'name': product.name,
-                'price': product.price,
+                'base_price': product.price,
+                'price': product.price + addon_total,
                 'image_url': product.image_url,
                 'quantity': 0,
+                'notes': notes,
+                'addons': [{'id': item.id, 'name': item.name, 'price': item.price} for item in addon_products],
             }
-        cart[key]['quantity'] += int(request.form.get('quantity', 1) or 1)
+        cart[key]['quantity'] += quantity
+        cart[key]['price'] = product.price + addon_total
         session['cart'] = cart
         flash(f'{product.name} adicionado ao carrinho.', 'success')
-        return redirect(request.referrer or url_for('public_store', slug=slug))
+        return redirect(url_for('view_cart', slug=slug))
 
     @app.route('/<slug>/cart')
     def view_cart(slug):
@@ -515,9 +556,17 @@ def register_routes(app):
             db.session.add(order)
             db.session.flush()
             for item in items:
+                item_label = item['name']
+                extras = []
+                if item.get('notes'):
+                    extras.append(f"Obs: {item['notes']}")
+                if item.get('addons'):
+                    extras.append("Adicionais: " + ', '.join(addon['name'] for addon in item.get('addons', [])))
+                if extras:
+                    item_label = f"{item_label} ({' | '.join(extras)})"
                 db.session.add(OrderItem(
                     order_id=order.id,
-                    product_name=item['name'],
+                    product_name=item_label,
                     quantity=item['quantity'],
                     unit_price=item['price'],
                     total_price=item['total'],

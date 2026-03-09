@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}{{ product.name }} - {{ store.name }}{% endblock %}
 {% block body %}
-<div class="storefront-page mobile-app-shell" style="--store-primary: {{ store.primary_color or '#ea1d2c' }}; --store-secondary: {{ store.secondary_color or '#111827' }}; --store-accent: {{ store.accent_color or '#fff1f2' }};">
+<div class="storefront-page mobile-app-shell ifood-store-shell" style="--store-primary: {{ store.primary_color or '#ea1d2c' }}; --store-secondary: {{ store.secondary_color or '#111827' }}; --store-accent: {{ store.accent_color or '#fff1f2' }};">
   <div class="app-mobile-frame">
     <header class="store-topbar glass-topbar product-detail-topbar">
       <a href="{{ url_for('public_store', slug=store.slug) }}" class="topbar-icon" aria-label="Voltar"><i class="bi bi-arrow-left"></i></a>
@@ -10,15 +10,20 @@
     </header>
 
     <main class="product-detail-page">
-      <section class="product-detail-hero app-card">
+      <section class="product-detail-hero app-card product-detail-hero-ifood">
         <div class="product-detail-image" style="background-image:url('{{ product.image_url or 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop' }}')"></div>
         <div class="product-detail-body">
           <div class="product-detail-header">
             <div>
-              <span class="section-kicker">{{ product.category.name if product.category else 'Produto' }}</span>
+              <span class="section-kicker section-kicker-red">{{ product.category.name if product.category else 'Produto' }}</span>
               <h1>{{ product.name }}</h1>
             </div>
-            <div class="product-price">R$ {{ '%.2f'|format(product.price) }}</div>
+            <div class="product-price-wrap product-price-wrap-stack">
+              {% if product.compare_at_price and product.compare_at_price > product.price %}
+              <div class="product-compare">R$ {{ '%.2f'|format(product.compare_at_price) }}</div>
+              {% endif %}
+              <div class="product-price">R$ {{ '%.2f'|format(product.price) }}</div>
+            </div>
           </div>
           <p class="product-detail-description">{{ product.description or 'Escolha este item e personalize seu pedido antes de adicionar ao carrinho.' }}</p>
           <div class="product-detail-meta">
@@ -28,15 +33,48 @@
         </div>
       </section>
 
-      <section class="detail-section app-card">
-        <div class="detail-section-head">
-          <div>
-            <span class="section-kicker">Monte seu pedido</span>
-            <h2>Adicionar item</h2>
+      <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="detail-flow-stack">
+        <section class="detail-section app-card">
+          <div class="detail-section-head">
+            <div>
+              <span class="section-kicker section-kicker-red">Observações</span>
+              <h2>Algum detalhe no preparo?</h2>
+            </div>
           </div>
-        </div>
-        <p class="detail-helper">Fluxo no estilo iFood: o cliente toca no produto, entra na página dele e só aqui escolhe a quantidade para adicionar ao carrinho.</p>
-        <form method="post" action="{{ url_for('add_to_cart', slug=store.slug, product_id=product.id) }}" class="detail-add-form">
+          <textarea name="notes" rows="4" class="detail-notes-input" placeholder="Ex: tirar cebola, maionese à parte, ponto da carne..."></textarea>
+        </section>
+
+        {% if suggested_drinks %}
+        <section class="detail-section app-card">
+          <div class="detail-section-head">
+            <div>
+              <span class="section-kicker section-kicker-red">Adicionais</span>
+              <h2>Bebidas e complementos</h2>
+            </div>
+          </div>
+          <div class="addon-check-list">
+            {% for item in suggested_drinks %}
+            <label class="addon-check-card">
+              <input type="checkbox" name="addon_ids" value="{{ item.id }}">
+              <div class="addon-check-thumb" style="background-image:url('{{ item.image_url or 'https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=800&auto=format&fit=crop' }}')"></div>
+              <div class="addon-check-copy">
+                <strong>{{ item.name }}</strong>
+                <span class="clamp-2">{{ item.description or 'Adicione ao pedido com um toque.' }}</span>
+                <b>+ R$ {{ '%.2f'|format(item.price) }}</b>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        <section class="detail-section app-card">
+          <div class="detail-section-head">
+            <div>
+              <span class="section-kicker section-kicker-red">Quantidade</span>
+              <h2>Adicionar item</h2>
+            </div>
+          </div>
           <div class="detail-qty-row">
             <div class="qty-stepper detail-qty-stepper" data-qty-stepper>
               <button type="button" class="qty-btn" data-qty-action="minus" aria-label="Diminuir"><i class="bi bi-dash"></i></button>
@@ -44,39 +82,16 @@
               <button type="button" class="qty-btn" data-qty-action="plus" aria-label="Aumentar"><i class="bi bi-plus"></i></button>
               <input type="hidden" name="quantity" value="1" data-qty-input>
             </div>
-            <button class="add-btn detail-add-btn" type="submit">Adicionar · R$ {{ '%.2f'|format(product.price) }}</button>
+            <button class="add-btn detail-add-btn" type="submit">Adicionar ao carrinho · R$ {{ '%.2f'|format(product.price) }}</button>
           </div>
-        </form>
-      </section>
-
-      {% if suggested_drinks %}
-      <section class="detail-section app-card">
-        <div class="detail-section-head">
-          <div>
-            <span class="section-kicker">Sugestões</span>
-            <h2>Bebidas e complementos</h2>
-          </div>
-        </div>
-        <div class="detail-suggestion-list">
-          {% for item in suggested_drinks %}
-          <a href="{{ url_for('product_detail', slug=store.slug, product_id=item.id) }}" class="detail-suggestion-card">
-            <div class="detail-suggestion-copy">
-              <strong>{{ item.name }}</strong>
-              <span class="clamp-2">{{ item.description or 'Abra para adicionar junto no pedido.' }}</span>
-              <b>R$ {{ '%.2f'|format(item.price) }}</b>
-            </div>
-            <div class="detail-suggestion-thumb" style="background-image:url('{{ item.image_url or 'https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=800&auto=format&fit=crop' }}')"></div>
-          </a>
-          {% endfor %}
-        </div>
-      </section>
-      {% endif %}
+        </section>
+      </form>
 
       {% if more_items %}
       <section class="detail-section app-card">
         <div class="detail-section-head">
           <div>
-            <span class="section-kicker">Mais opções</span>
+            <span class="section-kicker section-kicker-red">Mais opções</span>
             <h2>Continue montando</h2>
           </div>
         </div>

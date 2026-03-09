@@ -1120,3 +1120,256 @@ html, body { overflow-x: hidden; }
   .detail-qty-row { grid-template-columns: 108px minmax(0,1fr); }
   .detail-more-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
 }
+
+
+/* iFood-like storefront update */
+.ifood-store-shell .app-mobile-frame { max-width: 980px; }
+.ifood-hero-wrap { margin-bottom: -52px; }
+.ifood-summary-card {
+  position: relative;
+  margin: 0 28px 18px;
+  padding: 28px 30px 28px;
+  border-radius: 0 0 36px 36px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.summary-head-row { gap: 12px; }
+.summary-head-row h1 { font-size: clamp(34px, 5vw, 64px); line-height: .95; margin: 0; letter-spacing: -0.04em; }
+.summary-rating {
+  background: #fff0c6;
+  color: #c98100;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 800;
+  min-width: 92px;
+  text-align: center;
+  white-space: nowrap;
+}
+.summary-description {
+  font-size: clamp(18px, 2.2vw, 28px);
+  line-height: 1.1;
+  max-width: 760px;
+  color: #666;
+  margin: 18px 0 26px;
+}
+.summary-meta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.meta-pill {
+  border-radius: 999px;
+  padding: 14px 22px;
+  background: #f3f4f6;
+  color: #0f2742;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.meta-pill-open { background: #c7f4d6; color: #047857; }
+.meta-pill-closed { background: #fee2e2; color: #dc2626; }
+.summary-action-btn {
+  border: 0;
+  background: #f6f6f6;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  color: #7a7f87;
+  cursor: pointer;
+}
+.summary-action-btn.is-favorite { color: var(--primary); }
+.summary-action-btn:hover { transform: translateY(-1px); }
+
+.ifood-category-bar {
+  margin: 0 28px 22px;
+  padding: 8px 10px;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+}
+.category-pill-list-nowrap { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+.category-pill {
+  border: 0;
+  background: #fff1f2;
+  color: var(--primary);
+  font-size: clamp(18px, 1.8vw, 22px);
+  font-weight: 700;
+  padding: 16px 24px;
+  border-radius: 999px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.category-pill:hover, .category-pill:focus { background: #ffe2e5; }
+
+.ifood-content-stack { gap: 0; padding: 0 28px 120px; }
+.with-divider {
+  border-top: 1px solid #ececec;
+  padding-top: 28px;
+  margin-top: 12px;
+}
+.section-heading h2 {
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: .95;
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+.section-kicker-red {
+  color: var(--primary);
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: 500;
+}
+
+.featured-list-ifood { display: flex; flex-direction: column; gap: 18px; }
+.featured-product-card-ifood,
+.product-row-card-ifood {
+  display: grid;
+  grid-template-columns: 178px minmax(0,1fr);
+  gap: 22px;
+  padding: 18px 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  border-bottom: 1px solid #ececec;
+}
+.featured-product-image-ifood,
+.product-thumb-ifood {
+  width: 178px;
+  min-width: 178px;
+  aspect-ratio: 1 / 1;
+  border-radius: 28px;
+  background-size: cover;
+  background-position: center;
+}
+.featured-product-body-ifood,
+.product-row-main-ifood {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.featured-inline-rating {
+  align-self: flex-start;
+  margin-bottom: 14px;
+  background: #fff0c6;
+  color: #c98100;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 800;
+}
+.product-head-row-featured { align-items: flex-start; }
+.product-head-row h3 {
+  margin: 0;
+  font-size: clamp(28px, 2.8vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.product-description {
+  margin: 14px 0 16px;
+  color: #686868;
+  font-size: clamp(16px, 1.8vw, 22px);
+  line-height: 1.15;
+}
+.product-price-wrap-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.product-price {
+  color: #00a650;
+  font-weight: 800;
+  font-size: clamp(22px, 2.4vw, 34px);
+  white-space: nowrap;
+}
+.product-compare {
+  color: #8c8c8c;
+  text-decoration: line-through;
+  font-size: clamp(18px, 2vw, 28px);
+  white-space: nowrap;
+}
+.price-dash { color: #868686; font-weight: 700; font-size: 24px; }
+
+.product-detail-hero-ifood { padding: 0; overflow: hidden; }
+.product-detail-hero-ifood .product-detail-image { min-height: 320px; }
+.product-detail-hero-ifood .product-detail-body { padding: 24px; }
+.product-price-wrap-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.detail-flow-stack { display: grid; gap: 18px; }
+.detail-notes-input {
+  width: 100%;
+  min-height: 112px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 16px 18px;
+  resize: vertical;
+  font: inherit;
+}
+.addon-check-list { display: grid; gap: 14px; }
+.addon-check-card {
+  display: grid;
+  grid-template-columns: 24px 84px minmax(0,1fr);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #ececec;
+  border-radius: 22px;
+  padding: 12px;
+  cursor: pointer;
+}
+.addon-check-card input { width: 20px; height: 20px; accent-color: var(--primary); }
+.addon-check-thumb {
+  width: 84px;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  background-size: cover;
+  background-position: center;
+}
+.addon-check-copy { min-width: 0; display: grid; gap: 4px; }
+.addon-check-copy span { color: #6b7280; font-size: 14px; }
+.addon-check-copy b { color: #00a650; }
+
+.product-admin-grid-edit { gap: 16px; }
+.product-admin-card-editable {
+  display: grid;
+  grid-template-columns: 94px minmax(0,1fr);
+  gap: 14px;
+  align-items: flex-start;
+}
+.product-admin-main { min-width: 0; }
+.product-admin-prices { margin-top: 8px; }
+.status-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+.admin-edit-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #eceef2;
+}
+
+@media (max-width: 768px) {
+  .ifood-summary-card { margin: 0 14px 14px; padding: 18px; border-radius: 0 0 28px 28px; }
+  .summary-head-row h1 { font-size: 34px; }
+  .summary-description { font-size: 16px; margin: 12px 0 18px; }
+  .summary-rating { padding: 10px 14px; min-width: auto; font-size: 14px; }
+  .meta-pill { padding: 10px 14px; font-size: 14px; }
+  .summary-action-btn { width: 52px; height: 52px; font-size: 24px; }
+  .ifood-category-bar { margin: 0 14px 10px; padding: 0; }
+  .category-pill { padding: 12px 18px; font-size: 16px; }
+  .ifood-content-stack { padding: 0 14px 96px; }
+  .section-heading h2 { font-size: 28px; }
+  .section-kicker-red { font-size: 16px; }
+  .featured-product-card-ifood,
+  .product-row-card-ifood { grid-template-columns: 96px minmax(0,1fr); gap: 14px; padding: 14px 0; }
+  .featured-product-image-ifood,
+  .product-thumb-ifood { width: 96px; min-width: 96px; border-radius: 18px; }
+  .product-head-row h3 { font-size: 18px; }
+  .product-description { font-size: 13px; margin: 8px 0 10px; }
+  .product-price { font-size: 18px; }
+  .product-compare { font-size: 14px; }
+  .featured-inline-rating { margin-bottom: 8px; padding: 6px 10px; font-size: 12px; }
+  .addon-check-card { grid-template-columns: 20px 64px minmax(0,1fr); }
+  .addon-check-thumb { width: 64px; border-radius: 14px; }
+}

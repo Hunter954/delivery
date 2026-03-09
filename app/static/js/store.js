@@ -90,3 +90,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-toggle-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const form = document.querySelector(btn.dataset.toggleEdit);
+      if (!form) return;
+      const hidden = form.hasAttribute('hidden');
+      if (hidden) {
+        form.removeAttribute('hidden');
+        btn.textContent = 'Fechar';
+      } else {
+        form.setAttribute('hidden', '');
+        btn.textContent = 'Editar';
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-favorite-store]').forEach((btn) => {
+    const key = `favorite-store:${btn.dataset.favoriteStore}`;
+    const icon = btn.querySelector('i');
+    const renderFavorite = () => {
+      const active = localStorage.getItem(key) === '1';
+      btn.classList.toggle('is-favorite', active);
+      if (icon) {
+        icon.className = active ? 'bi bi-heart-fill' : 'bi bi-heart';
+      }
+    };
+    renderFavorite();
+    btn.addEventListener('click', () => {
+      const active = localStorage.getItem(key) === '1';
+      localStorage.setItem(key, active ? '0' : '1');
+      renderFavorite();
+    });
+  });
+
+  document.querySelectorAll('[data-share-store]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const url = btn.dataset.shareUrl || window.location.href;
+      const title = btn.dataset.shareTitle || document.title;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title, text: `Olha essa loja: ${title}`, url });
+          return;
+        }
+      } catch (err) {}
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Olha essa loja: ${title} ${url}`)}`;
+      window.open(whatsappUrl, '_blank', 'noopener');
+    });
+  });
+});
